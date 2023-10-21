@@ -14,8 +14,8 @@ fun main(args: Array<String>) {
         addEventListener{it: InverterEvent -> eventList.add(it)}
 
         val inverterList = mutableListOf<Inverter>()
-        inverterList.add(Inverter(1,2F,10F,12F,1F,4, now, 2F))
-        val invPark = Park<Inverter>(1,"Test",inverterList)
+        inverterList.add(Inverter(1,2.2F,10F,12F,1F,4, now, 2F))
+        val invPark = Park(1,"Test",inverterList)
 
         /*addEventListener{it: CntEvent -> eventList.add(it)}
         //ClockSync(tickDuration = 1.seconds)
