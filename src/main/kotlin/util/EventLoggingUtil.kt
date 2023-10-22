@@ -1,7 +1,9 @@
 package util
 
-fun eventLogging( block: () -> Unit){
-    if(Config.COMPONENT_LOG){
+fun unitEventLogging(block: () -> Unit){
+    if(Config.UNIT_LOG){
         block()
     }
 }
+
+

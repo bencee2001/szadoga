@@ -1,16 +1,12 @@
-package component
+package park
 
-import org.kalasim.Component
+import component.AbstractComponent
 
 class Park(
-    private val parkId: Int,
-    private val parkName: String,
+    val parkId: Int,
+    val parkName: String,
     private val componentList: List<AbstractComponent>  //TODO park-on belül csak egy fajta
-): Component() {
-
-    override fun repeatedProcess() = sequence<Component> {
-
-    }
+){
 
     fun setTargetPower(target: Float){
         val targetPerComponent = target.div(componentList.size)
@@ -19,11 +15,12 @@ class Park(
         }
     }
 
-    fun getSumPower() {
+    fun getSumPower(): Float{
         var sum = 0F
         componentList.forEach {
-            sum =+ it.read()
+            sum += it.read()
         }
+        return sum
     }
 
 }
