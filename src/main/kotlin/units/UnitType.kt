@@ -1,9 +1,8 @@
-package model
+package units
 
-enum class ComponentType {
+enum class UnitType {
     INVERTER,
     LOADBANK,
-    LOADBANKCONTROLLER,
     ENGINE,
     KIF_POD,
     BATTERY,

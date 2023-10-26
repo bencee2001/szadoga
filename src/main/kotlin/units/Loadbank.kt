@@ -1,6 +1,5 @@
-package component
+package units
 
-import model.ComponentType
 import org.kalasim.Component
 
 class Loadbank(
@@ -8,7 +7,7 @@ class Loadbank(
     private var prosume: Float = 0F,
     private val canStart: Boolean = false,
     //TODO kell-e default heat
-): AbstractComponent(loadbankId, type = ComponentType.LOADBANK)  {
+): AbstractUnit(loadbankId, type = UnitType.LOADBANK)  {
 
     override fun repeatedProcess() = sequence<Component> {
 

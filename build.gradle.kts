@@ -1,34 +1,23 @@
+
+
 plugins {
-    kotlin("jvm") version "1.8.0"
-    application
+    kotlin("jvm") version "1.8.10"
 }
 
-group = "org.example"
-version = "1.0-SNAPSHOT"
+group = "hu.ewiser"
+version = "0.0.1"
 
 repositories {
     mavenCentral()
-    maven("https://jitpack.io")
 }
 
 dependencies {
-
     implementation("com.github.holgerbrandl:kalasim:0.11.5")
-    implementation("com.github.holgerbrandl:krangl:0.18.4")
-
+    implementation("org.jetbrains.kotlinx:dataframe:0.12.0")
 
     testImplementation(kotlin("test"))
-}
-
-tasks.test {
-    useJUnitPlatform()
 }
 
 kotlin {
     jvmToolchain(17)
 }
-
-application {
-    mainClass.set("MainKt")
-}
-

@@ -1,23 +1,29 @@
 package park
 
-import component.AbstractComponent
+import units.AbstractUnit
 
+// Lehet több fajta router egy parkban?(inverter,loadbank, engine)
+// Routerek között elosztódik a target power, hogyan??
+
+// Router szintű event logging (parkId, routerId, routerPower)/(parkId, sumRouterPower)
+// log amikor fgv van hívva
 class Park(
     val parkId: Int,
     val parkName: String,
-    private val componentList: List<AbstractComponent>  //TODO park-on belül csak egy fajta
+    val maximumOutput: Float,
+    private val unitList: List<AbstractUnit>
 ){
 
     fun setTargetPower(target: Float){
-        val targetPerComponent = target.div(componentList.size)
-        componentList.forEach {
-            it.command(targetPerComponent)
+        val targetPerUnit = target.div(unitList.size)
+        unitList.forEach {
+            it.command(targetPerUnit)
         }
     }
 
     fun getSumPower(): Float{
         var sum = 0F
-        componentList.forEach {
+        unitList.forEach {
             sum += it.read()
         }
         return sum

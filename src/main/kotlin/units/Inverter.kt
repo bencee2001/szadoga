@@ -1,22 +1,21 @@
-package component
+package units
 
+import constvalue.inverter.InverterConst
 import event.InverterEvent
-import model.ComponentType
 import org.kalasim.Component
 import org.kalasim.TickTime
 import util.unitEventLogging
 
+
+//inverter szintű logging ( inverterId, inverterPower!=inverterReadPower)
 class Inverter(
     inverterId: Int,
     private var prosume: Float,
     private var targetProsume: Float,
-    private val maxPowerOutput: Float,
-    private val powerControlPerTick: Float,
-    private val readFrequency: Int,
-    private val powerControlReactionTime: Int,  //TODO használni
     private var lastReadTime: TickTime,
-    private var isReadable: Boolean
-): AbstractComponent(inverterId, type = ComponentType.INVERTER) {
+    private var isReadable: Boolean,
+    private val constValues: InverterConst
+): AbstractUnit(inverterId, type = UnitType.INVERTER) {
 
     private var lastReadPower: Float
 
@@ -28,6 +27,7 @@ class Inverter(
     override fun repeatedProcess() = sequence<Component> {
         hold(1)
         changeProsume()
+        println("Inside: $prosume")
     }
 
     override fun read(): Float {
@@ -42,9 +42,9 @@ class Inverter(
     private fun changeProsume() {
         if (prosume != targetProsume) {
             if (targetProsume > prosume) {
-                increaseProsume(powerControlPerTick)
+                increaseProsume(constValues.POWER_CONTROL_PER_TICK)
             } else {
-                decreaseProsume(powerControlPerTick)
+                decreaseProsume(constValues.POWER_CONTROL_PER_TICK)
             }
         }
         unitEventLogging { log(InverterEvent(id, prosume, now)) }
@@ -53,8 +53,8 @@ class Inverter(
 
     private fun increaseProsume(change: Float){  //TODO jó-e?
         val newProsume = prosume + change
-        prosume = if(newProsume > maxPowerOutput){
-            maxPowerOutput
+        prosume = if(newProsume > constValues.MAX_POWER_OUTPUT){
+            constValues.MAX_POWER_OUTPUT
         } else  if (newProsume > targetProsume){
             targetProsume
         } else {
@@ -75,7 +75,7 @@ class Inverter(
 
     private fun readingWithChecks(): Float {
         return if(isReadable) {
-            if (now.minus(lastReadTime) > readFrequency) {
+            if (now.minus(lastReadTime) > constValues.READ_FREQUENCY) {
                 lastReadTime = now
                 lastReadPower = prosume
                 prosume
@@ -88,9 +88,9 @@ class Inverter(
     }
 
     private fun setTargetProsume(target: Float) {
-        targetProsume = if (target > maxPowerOutput) {
+        targetProsume = if (target > constValues.MAX_POWER_OUTPUT) {
             logger.warn { "TargetProsume bigger than Inverter $id maximum power output." }
-            maxPowerOutput
+            constValues.MAX_POWER_OUTPUT
         } else {
             target
         }
