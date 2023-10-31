@@ -3,5 +3,5 @@ package model
 data class PowerPlantData(
     val powerPlantId: Int,
     val powerPlantName: String,
-    val maxPowerOutPut: Float
+    val maxPowerOutPut: Double
 )

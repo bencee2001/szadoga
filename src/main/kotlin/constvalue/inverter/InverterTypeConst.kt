@@ -4,6 +4,7 @@ import model.InverterType
 
 object InverterTypeConst {
     val map = mapOf(
-        InverterType.HUAWEI to HuaweiInverterConst
+        InverterType.HUAWEI to HuaweiInverterConst,
+        InverterType.TEST to TestInverter
     )
 }

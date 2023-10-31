@@ -3,18 +3,18 @@ package units
 class PodKif(
     podKifId: Int,
     private var isProducing: Boolean,
-    private val maxPowerOut: Float
+    private val maxPowerOut: Double
 ): AbstractUnit(podKifId, UnitType.KIF_POD) {
 
-    override fun read(): Float {
-        return if (isProducing){
+    override fun read(): UnitPower {
+        return TODO()/* if (isProducing){
             maxPowerOut
         } else {
-            0F
-        }
+            0.0
+        }*/
     }
 
-    override fun command(target: Float) {
-        isProducing = target != 0F
+    override fun command(target: Double) {
+        isProducing = target != 0.0
     }
 }

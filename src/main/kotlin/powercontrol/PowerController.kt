@@ -1,8 +1,8 @@
 package powercontrol
 
-import event.PowerControlEvent
-import org.kalasim.Component
 import park.Park
+import park.ParkPower
+import temp.RouterLogic
 
 
 //Park szintű event logging (parkId, parkPower=sumRouterPower)
@@ -11,14 +11,18 @@ class PowerController(
     private val parkList: List<Park>
 ){
 
-    fun commandParks(targetByPowerPlantId: Map<Int, Int>){
+    /**
+     *
+     * @param targetByPowerPlantId Map<powerPlantId, powerPlantTarget>
+     */
+    suspend fun commandParks(targetByPowerPlantId: Map<Int, Int>){
         targetByPowerPlantId.forEach { (powerPlantId,  target)->
             val park = parkList.first{it.parkId == powerPlantId}
-            park.setTargetPower(target.toFloat())
+            park.setTargetPower(RouterLogic.getTargetByUnits(park, target.toDouble()))
         }
     }
 
-    fun readParks(): Float{
-        return parkList[0].getSumPower()
+    fun readParks(): List<ParkPower>{
+        return parkList.map { it.getSumPower() }
     }
 }

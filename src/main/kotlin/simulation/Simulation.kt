@@ -9,9 +9,10 @@ import org.kalasim.TickTime
 import park.Park
 import powercontrol.PowerController
 import units.Inverter
+import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
 
-class Simulation(simData: SimulationData, inRealTime: Boolean): Environment() {
+class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean): Environment(randomSeed = randomSeed) {
 
     lateinit var powerController: PowerController
 
@@ -19,7 +20,7 @@ class Simulation(simData: SimulationData, inRealTime: Boolean): Environment() {
         this.apply {
             if(inRealTime) ClockSync(tickDuration = 1.seconds)
             powerController = setPowerController(simData)
-            powerController.commandParks(mapOf(1 to 30)) //TODO
+            //powerController.commandParks(mapOf(1 to 30)) //TODO
         }
     }
 
@@ -34,7 +35,7 @@ class Simulation(simData: SimulationData, inRealTime: Boolean): Environment() {
                 Park(
                     parkId = simData.powerPlants[powerPlantId]!!.powerPlantId,
                     parkName = simData.powerPlants[powerPlantId]!!.powerPlantName,
-                    unitList = inverterUnit,
+                    unitList = inverterUnit.associateBy { it.id },
                     maximumOutput = simData.powerPlants[powerPlantId]!!.maxPowerOutPut
                 )
             )
@@ -45,11 +46,11 @@ class Simulation(simData: SimulationData, inRealTime: Boolean): Environment() {
     private fun toInverterUnit(inverters: List<InverterData>): List<Inverter> {
         val inverterUnit = inverters.map { inv ->
             val invDefVal = getInverterConst(inv)
-            require(invDefVal != null)
             Inverter(
                 inverterId = inv.inverterId,
-                targetProsume = 0F,
-                prosume = 0F,
+                targetProsume = 0.0,
+                prosume = 0.0,
+                maxAllowedAcPower = inv.maxAllowedAcPower,
                 constValues = invDefVal,
                 lastReadTime = TickTime(0),
                 isReadable = true
@@ -58,9 +59,6 @@ class Simulation(simData: SimulationData, inRealTime: Boolean): Environment() {
         return inverterUnit
     }
 
-    private fun getInverterConst(inv: InverterData) = when (inv.type) {
-        InverterType.HUAWEI -> InverterTypeConst.map[inv.type]
-        else -> error("")
-    }
+    private fun getInverterConst(inv: InverterData) = InverterTypeConst.map[inv.type] ?: error("")
 
 }

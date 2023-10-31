@@ -9,5 +9,5 @@ import model.PowerPlantData
 data class SimulationData (
     val powerPlants: Map<Int, PowerPlantData> = emptyMap(),
     val inverters: Map<Int, InverterData> = emptyMap(),
-    val prosumerIdByPowerPlantId: Map<Int,Int>
+    val prosumerIdByPowerPlantId: Map<Int,Int>,
 )

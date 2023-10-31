@@ -10,23 +10,21 @@ import units.AbstractUnit
 class Park(
     val parkId: Int,
     val parkName: String,
-    val maximumOutput: Float,
-    private val unitList: List<AbstractUnit>
+    val maximumOutput: Double,
+    val unitList: Map<Int,AbstractUnit>
 ){
 
-    fun setTargetPower(target: Float){
-        val targetPerUnit = target.div(unitList.size)
-        unitList.forEach {
-            it.command(targetPerUnit)
+    suspend fun setTargetPower(targetByUnit: Map<Int, Double>){
+        targetByUnit.forEach { (i, target) ->
+            unitList[i]?.command(target)
         }
     }
 
-    fun getSumPower(): Float{
-        var sum = 0F
-        unitList.forEach {
-            sum += it.read()
-        }
-        return sum
+    fun getSumPower(): ParkPower{
+        val powers = unitList.values.map { it.read() }
+        val time = powers.first().tickTime
+        val parkPower = powers.sumOf { it.power }
+        return ParkPower(parkId, parkPower, time)
     }
 
 }

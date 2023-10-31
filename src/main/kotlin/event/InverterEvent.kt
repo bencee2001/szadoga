@@ -5,6 +5,6 @@ import org.kalasim.TickTime
 
 class InverterEvent(
     val inverterId: Int,
-    val producing: Float,
+    val producing: Double,
     time: TickTime
 ): Event(time)
