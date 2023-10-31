@@ -8,11 +8,11 @@ import org.kalasim.Component
  * @property type
  */
 abstract class AbstractUnit(
-    protected val id: Int,
-    protected val type: UnitType
+    val id: Int,
+    val type: UnitType
 ): Component() {
 
-    abstract fun read(): Float
-    abstract fun command(target: Float)
+    abstract fun read(): UnitPower
+    abstract fun command(target: Double)
 
 }
