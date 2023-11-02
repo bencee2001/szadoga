@@ -1,7 +1,7 @@
 package util
 
-fun unitEventLogging(block: () -> Unit){
-    if(Config.UNIT_LOG){
+fun eventLogging(isLogging: Boolean ,block: () -> Unit){
+    if(isLogging){
         block()
     }
 }

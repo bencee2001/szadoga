@@ -1,14 +1,15 @@
 package units
 
+import Config
 import constvalue.inverter.InverterConst
 import event.InverterEvent
+import event.UnitReadEvent
+import kotlinx.datetime.Instant
 import org.apache.commons.math3.distribution.UniformRealDistribution
-import org.kalasim.Component
-import org.kalasim.TickTime
-import org.kalasim.invoke
-import org.kalasim.uniform
-import util.unitEventLogging
+import org.kalasim.*
+import util.eventLogging
 import kotlin.math.floor
+import kotlin.time.Duration.Companion.seconds
 
 
 //inverter szintű logging ( inverterId, inverterPower!=inverterReadPower)
@@ -56,7 +57,9 @@ class Inverter(
     }
 
     override fun read(): UnitPower {
-        return readingWithChecks()
+        val power = readingWithChecks()
+        eventLogging(Config.UNIT_READ_LOG){log(UnitReadEvent(id, power.power, now))}
+        return power
     }
 
     override fun command(target: Double) {
@@ -72,7 +75,7 @@ class Inverter(
                 decreaseProsume(constValues.POWER_CONTROL_PER_TICK)
             }
         }
-        unitEventLogging { log(InverterEvent(id, prosume, now)) }
+        eventLogging(Config.UNIT_LOG) { log(InverterEvent(id, prosume, now)) }
     }
 
 
@@ -114,7 +117,7 @@ class Inverter(
 
     private fun setTargetProsume(target: Double) {
         newTarget = if (target > maxAllowedAcPower) {
-            logger.warn { "TargetProsume bigger than Inverter $id maximum power output." }
+            //logger.warn { "TargetProsume bigger than Inverter $id maximum power output." }
             uniform(maxAllowedAcPower.minus(produceAccuracy), maxAllowedAcPower).invoke()
         } else {
             uniform(target - produceAccuracy, target + produceAccuracy).invoke()

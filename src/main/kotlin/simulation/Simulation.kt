@@ -1,6 +1,8 @@
 package simulation
 
 import constvalue.inverter.InverterTypeConst
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import model.InverterType
 import model.InverterData
 import org.kalasim.ClockSync
@@ -10,6 +12,7 @@ import park.Park
 import powercontrol.PowerController
 import units.Inverter
 import kotlin.random.Random
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean): Environment(randomSeed = randomSeed) {

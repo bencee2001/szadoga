@@ -4,8 +4,8 @@ import kotlinx.datetime.Instant
 import org.kalasim.Event
 import org.kalasim.TickTime
 
-class PowerControlEvent(
-    val parkId: Int,
-    val produced: Float,
+class UnitReadEvent(
+    val unitId: Int,
+    val power: Double,
     time: TickTime
 ): Event(time)
