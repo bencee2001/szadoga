@@ -4,7 +4,7 @@ import org.kalasim.Component
 import org.kalasim.invoke
 import org.kalasim.uniform
 
-class Engine(
+/*class Engine(
     engineId: Int,
     private val ratedAcPower: Double,
     private val minimumRunningPower: Double,
@@ -53,4 +53,4 @@ class Engine(
             hold -= 1
         }
     }
-}
+}*/

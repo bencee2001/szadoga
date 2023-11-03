@@ -1,6 +1,8 @@
 package units
 
+import constvalue.inverter.ConstValues
 import org.kalasim.Component
+import scheduler.TaskScheduler
 
 /**
  * power producing or consuming unit
@@ -9,7 +11,11 @@ import org.kalasim.Component
  */
 abstract class AbstractUnit(
     val id: Int,
-    val type: UnitType
+    val type: UnitType,
+    val constants: ConstValues,
+    val taskScheduler: TaskScheduler,
+    var targetOutput: Double,
+    var hasError: Boolean,
 ): Component() {
 
     abstract fun read(): UnitPower

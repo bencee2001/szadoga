@@ -31,18 +31,21 @@ suspend fun main(args: Array<String>){
 
         startKoin {}
 
+        var i = 0
+
         val test = Simulation(simDa, 100, true)
         launch {
             test.run(30)
         }
 
-        sleep(2_000)
-        println("Hello")
-        test.powerController.commandParks(mapOf(1 to 30))
-        sleep(10_000)
-        println("Bello")
-        test.powerController.commandParks(mapOf(1 to 100))
-
-        test.powerController.readParks()
+        while(true){
+            i += 2
+            if(i < 15) {
+                test.powerController.commandParks(mapOf(1 to 50))
+            }else{
+                test.powerController.commandParks(mapOf(1 to 15))
+            }
+            sleep(2_000)
+        }
     }
 }

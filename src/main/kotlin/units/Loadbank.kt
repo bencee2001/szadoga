@@ -1,11 +1,13 @@
 package units
 
+import constvalue.inverter.ConstValues
 import org.kalasim.Component
+import scheduler.TaskScheduler
 
 /**
  * TODO
  *
- * @property prosume
+ * @property consume
  * @property ratedAcPower
  * @property warmingPerTick - positive double
  * @property coolingPerTick - positive double
@@ -20,30 +22,26 @@ import org.kalasim.Component
  */
 class Loadbank(
     loadbankId: Int,
-    private var prosume: Double = 0.0,
-    private val ratedAcPower: Double,
-    private val warmingPerTick: Double,
-    private val coolingPerTick: Double,
-    private val powerStepW: Double,
     private var temp: Double = 0.0,
-    private var tempTarget: Double,
-    private var running: Boolean = false,
-    //TODO kell-e default heat
-): AbstractUnit(loadbankId, type = UnitType.LOADBANK)  {
+    private var tempTarget: Double = 0.0,
+    constants: ConstValues,
+    targetOutput: Double = 0.0,
+    hasError: Boolean
+): AbstractUnit(loadbankId, type = UnitType.LOADBANK, constants, TaskScheduler(), targetOutput, hasError)  {
 
-    private val maxTemp: Double = ratedAcPower.div(powerStepW)
+    private val maxTemp: Double = 100.0
 
     override fun repeatedProcess() = sequence<Component> {
         changeTemperature()
     }
 
     override fun read(): UnitPower {
-         return UnitPower(id, temp * powerStepW, now, UnitPowerMessage.CONSUME)
+         return UnitPower(id, calculateConsumeFromTemp(temp), now, UnitPowerMessage.CONSUME)
     }
 
     override fun command(target: Double) {
-        tempTarget = target.div(powerStepW)
-        running = target != 0.0
+        tempTarget = calculateTempFromTarget(target)
+
     }
 
     fun canNextStart(): Boolean{
@@ -51,20 +49,30 @@ class Loadbank(
     }
 
     private fun changeTemperature() {
-        if(running){
-            val newTemp = temp + warmingPerTick
+        if(tempTarget != 0.0){
+            val newTemp = temp + constants.UP_POWER_CONTROL_PER_TICK
             temp = if(newTemp > maxTemp){
                 maxTemp
             } else {
                 newTemp
             }
         } else {
-            val newTemp = temp - coolingPerTick
+            val newTemp = temp - constants.DOWN_POWER_CONTROL_PER_TICK
             temp = if(newTemp < 0.0){
                 maxTemp
             } else {
                 newTemp
             }
         }
+    }
+
+    private fun calculateConsumeFromTemp(temp: Double): Double{
+        val powerPerTemp = constants.RATED_AC_POWER.div(maxTemp)
+        return powerPerTemp.times(temp)
+    }
+
+    private fun calculateTempFromTarget(power: Double): Double{
+        val powerPerTemp = constants.RATED_AC_POWER.div(maxTemp)
+        return power.div(powerPerTemp)
     }
 }

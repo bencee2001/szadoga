@@ -1,6 +1,6 @@
 package units
 
-class PodKif(
+/*class PodKif(
     podKifId: Int,
     private var isProducing: Boolean,
     private val maxPowerOut: Double
@@ -17,4 +17,4 @@ class PodKif(
     override fun command(target: Double) {
         isProducing = target != 0.0
     }
-}
+}*/

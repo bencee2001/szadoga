@@ -1,9 +1,6 @@
 package simulation
 
-import constvalue.inverter.InverterTypeConst
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
-import model.InverterType
+import constvalue.inverter.ConstByType
 import model.InverterData
 import org.kalasim.ClockSync
 import org.kalasim.Environment
@@ -11,8 +8,6 @@ import org.kalasim.TickTime
 import park.Park
 import powercontrol.PowerController
 import units.Inverter
-import kotlin.random.Random
-import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean): Environment(randomSeed = randomSeed) {
@@ -51,17 +46,15 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean):
             val invDefVal = getInverterConst(inv)
             Inverter(
                 inverterId = inv.inverterId,
-                targetProsume = 0.0,
+                target = 0.0,
                 prosume = 0.0,
-                maxAllowedAcPower = inv.maxAllowedAcPower,
-                constValues = invDefVal,
-                lastReadTime = TickTime(0),
-                isReadable = true
+                constants = invDefVal,
+                hasError = false
             )
         }
         return inverterUnit
     }
 
-    private fun getInverterConst(inv: InverterData) = InverterTypeConst.map[inv.type] ?: error("")
+    private fun getInverterConst(inv: InverterData) = ConstByType.map[inv.type] ?: error("")
 
 }
