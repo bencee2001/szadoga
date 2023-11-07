@@ -1,6 +1,7 @@
 package simulation
 
 import model.InverterData
+import model.LoadbankData
 import model.PowerPlantData
 
 
@@ -9,5 +10,6 @@ import model.PowerPlantData
 data class SimulationData (
     val powerPlants: Map<Int, PowerPlantData> = emptyMap(),
     val inverters: Map<Int, InverterData> = emptyMap(),
-    val prosumerIdByPowerPlantId: Map<Int,Int>,
+    val loadbanks: Map<Int, LoadbankData> = emptyMap(),
+    val powerPlantIdByProsumerId: Map<Int,Int>,
 )

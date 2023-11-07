@@ -1,5 +1,7 @@
 package constvalue.inverter
 
+import constvalue.ConstValues
+
 class CostumInverter(
     override val READ_FREQUENCY: Int,
     override val POWER_CONTROL_REACTION_TIME: Int,

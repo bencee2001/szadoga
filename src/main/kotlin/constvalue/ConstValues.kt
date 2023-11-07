@@ -1,4 +1,4 @@
-package constvalue.inverter
+package constvalue
 
 interface ConstValues {
     val UP_POWER_CONTROL_PER_TICK: Double

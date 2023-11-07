@@ -1,6 +1,6 @@
 package units
 
-import constvalue.inverter.ConstValues
+import constvalue.ConstValues
 import org.kalasim.Component
 import scheduler.TaskScheduler
 

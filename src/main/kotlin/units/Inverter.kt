@@ -1,15 +1,17 @@
 package units
 
 import Config
-import constvalue.inverter.ConstValues
+import constvalue.ConstValues
 import event.InverterEvent
 import event.UnitReadEvent
 import org.apache.commons.math3.distribution.UniformRealDistribution
 import org.kalasim.*
+import org.kalasim.misc.AmbiguousDuration
 import scheduler.TargetSetTask
 import scheduler.TaskScheduler
 import util.eventLogging
 import kotlin.math.floor
+import kotlin.time.seconds
 
 
 //inverter szintű logging ( inverterId, inverterPower!=inverterReadPower)
@@ -45,7 +47,7 @@ class Inverter(
         hold(1)
         taskScheduler.checkTasks()
         changeProsume()
-        println("Inside $id: $prosume, $targetOutput, $now")
+        //println("Inverter $id: $prosume, $targetOutput, $now")
     }
 
     override fun read(): UnitPower {

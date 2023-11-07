@@ -1,18 +1,11 @@
 
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import model.InverterType
-import model.InverterData
-import model.PowerPlantData
-import org.kalasim.*
-import org.kalasim.misc.AmbiguousDuration
+import model.*
 import org.koin.core.context.startKoin
 import simulation.Simulation
 import simulation.SimulationData
-import units.Inverter
 import java.lang.Thread.sleep
-import kotlin.time.Duration.Companion.seconds
-import kotlin.time.DurationUnit
 
 suspend fun main(args: Array<String>){
     coroutineScope {
@@ -26,7 +19,12 @@ suspend fun main(args: Array<String>){
                 3 to InverterData(3, 1, 10.0, true, InverterType.HUAWEI),
                 4 to InverterData(4, 1, 25.0, true, InverterType.HUAWEI)
             ),
-            prosumerIdByPowerPlantId = mapOf()
+            loadbanks = mapOf(
+                1 to LoadbankData(1, LoadbankType.UNKNOWN, 20, 2, 1)
+            ),
+            powerPlantIdByProsumerId = mapOf(
+                1 to 1
+            )
         )
 
         startKoin {}
@@ -35,15 +33,16 @@ suspend fun main(args: Array<String>){
 
         val test = Simulation(simDa, 100, true)
         launch {
-            test.run(30)
+            test.run(60)
         }
 
         while(true){
             i += 2
-            if(i < 15) {
+            println(test.powerController.readParks())
+            if(i < 30) {
                 test.powerController.commandParks(mapOf(1 to 50))
             }else{
-                test.powerController.commandParks(mapOf(1 to 15))
+                test.powerController.commandParks(mapOf(1 to 20))
             }
             sleep(2_000)
         }

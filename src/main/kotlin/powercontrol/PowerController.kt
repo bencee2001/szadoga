@@ -23,6 +23,6 @@ class PowerController(
     }
 
     fun readParks(): List<ParkPower>{
-        return parkList.map { it.getSumPower() }
+        return parkList.map { it.getSumConsume() }
     }
 }

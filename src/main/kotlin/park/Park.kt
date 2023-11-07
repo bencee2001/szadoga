@@ -1,6 +1,8 @@
 package park
 
 import units.AbstractUnit
+import units.UnitPowerMessage
+import units.UnitType
 
 // Lehet több fajta router egy parkban?(inverter,loadbank, engine)
 // Routerek között elosztódik a target power, hogyan??
@@ -11,20 +13,33 @@ class Park(
     val parkId: Int,
     val parkName: String,
     val maximumOutput: Double,
-    val unitList: Map<Int,AbstractUnit>
+    val unitList: List<AbstractUnit>
 ){
 
-    suspend fun setTargetPower(targetByUnit: Map<Int, Double>){
-        targetByUnit.forEach { (i, target) ->
-            unitList[i]?.command(target)
+    fun setTargetPower(targetsByUnitType: Map<UnitType,Map<Int, Double>>){
+        targetsByUnitType.forEach{ (type, targetByUnit) ->
+            val unitListByType = unitList.filter { it.type == type }.associateBy { it.id }
+            targetByUnit.forEach { (i, target) ->
+                unitListByType[i]?.command(target)
+            }
         }
     }
 
-    fun getSumPower(): ParkPower{
-        val powers = unitList.values.map { it.read() }
+    fun getSumConsume(): ParkPower{
+        val powers = unitList.map { it.read() }
         val time = powers.first().tickTime
-        val parkPower = powers.sumOf { it.power }
+        val parkPower = powers.sumOf { if (it.unitPowerMessage == UnitPowerMessage.PRODUCE)
+                it.power
+            else
+                -it.power
+        }
         return ParkPower(parkId, parkPower, time)
     }
 
+    fun getSumProduce(): ParkPower{
+        val powers = unitList.map { it.read() }
+        val time = powers.first().tickTime
+        val parkPower = powers.filter { it.unitPowerMessage == UnitPowerMessage.PRODUCE }.sumOf { it.power }
+        return ParkPower(parkId, parkPower, time)
+    }
 }
