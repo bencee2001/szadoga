@@ -1,5 +1,5 @@
 package model.types
 
-enum class EngineType {
+enum class EngineType: UnitSubType {
     TEST
 }

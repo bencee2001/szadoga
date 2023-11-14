@@ -25,7 +25,7 @@ suspend fun main(args: Array<String>){
                 4 to InverterData(4, 1, 25.0, true, InverterType.HUAWEI)
             ),
             loadbanks = mapOf(
-                1 to LoadbankData(1, LoadbankType.UNKNOWN, 20, 2, 1)
+                1 to LoadbankData(1, 1, 20, 2, LoadbankType.TEST)
             ),
             powerPlantIdByProsumerId = mapOf(
                 1 to 1,

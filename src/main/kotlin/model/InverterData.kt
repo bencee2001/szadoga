@@ -7,5 +7,5 @@ data class InverterData (
     val powerPlantId: Int,
     val ratedAcPower: Double,
     val controllable: Boolean,
-    val type: InverterType
+    val inverterType: InverterType
 )

@@ -1,5 +1,5 @@
 package model.types
 
-enum class LoadbankType {
-    UNKNOWN
+enum class LoadbankType: UnitSubType {
+    TEST
 }

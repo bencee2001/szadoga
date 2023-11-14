@@ -2,7 +2,7 @@ package constvalue.inverter
 
 import constvalue.ConstValues
 
-object HuaweiInverterConst: ConstValues {
+object HuaweiInverter: ConstValues {
     override val UP_POWER_CONTROL_PER_TICK = 0.5
     override val DOWN_POWER_CONTROL_PER_TICK = 0.3
     override val RATED_AC_POWER = 50.0

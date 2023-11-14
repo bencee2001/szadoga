@@ -1,5 +1,5 @@
 package model.types
 
-enum class BatteryType {
+enum class BatteryType: UnitSubType {
     TEST
 }

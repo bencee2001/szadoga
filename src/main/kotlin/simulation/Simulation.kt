@@ -1,12 +1,12 @@
 package simulation
 
 import constvalue.ConstByType
-import constvalue.engine.TestEngine
-import constvalue.loadbank.TestLoadbank
+import constvalue.ConstValues
 import model.BatteryData
 import model.EngineData
 import model.InverterData
 import model.LoadbankData
+import model.types.UnitSubType
 import org.kalasim.ClockSync
 import org.kalasim.Environment
 import park.Park
@@ -85,7 +85,7 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean):
 
     private fun toInverterUnits(inverters: List<InverterData>): List<Inverter> {
         return inverters.map { inv ->
-            val invDefVal = getInverterConst(inv)
+            val invDefVal = getConstValues( UnitType.INVERTER ,inv.inverterType)
             Inverter(
                 inverterId = inv.inverterId,
                 target = 0.0,
@@ -99,7 +99,7 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean):
 
     private fun toLoadbankUnits(loadbanks: List<LoadbankData>): List<Loadbank> {
         val loadbankUnits = loadbanks.map { ld ->
-            val defVal = TestLoadbank
+            val defVal = getConstValues( UnitType.LOADBANK ,ld.loadbankType)
             Loadbank(
                 loadbankId =  ld.loadbankId,
                 temp = 0.0,
@@ -114,7 +114,7 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean):
 
     private fun toEngineUnits(engines: List<EngineData>): List<Engine> {
         val engineUnits = engines.map{ eng ->
-            val defVal = TestEngine
+            val defVal = getConstValues( UnitType.ENGINE ,eng.engineType)
             Engine(
                 engineId = eng.engineId,
                 minimumRunningPower = eng.minimumRunningPower,
@@ -131,7 +131,7 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean):
 
     private fun toBatteryUnits(batteries: List<BatteryData>): List<Battery> {
         val batteryUnits = batteries.map { bty ->
-            val defVal = TestEngine
+            val defVal = getConstValues( UnitType.BATTERY ,bty.batteryType)
             Battery(
                 batteryId = bty.batteryId,
                 target = 0.0,
@@ -143,5 +143,7 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean):
         return batteryUnits
     }
 
-    private fun getInverterConst(inv: InverterData) = ConstByType.map[inv.type] ?: error("")
+    private fun getConstValues(unitType: UnitType, unitSubType: UnitSubType): ConstValues{
+        return ConstByType.get(Pair(unitType, unitSubType))
+    }
 }

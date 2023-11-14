@@ -1,8 +1,6 @@
-package constvalue.inverter
+package constvalue
 
-import constvalue.ConstValues
-
-class CostumInverter(
+class CustomValues(
     override val READ_FREQUENCY: Int,
     override val POWER_CONTROL_REACTION_TIME: Int,
     override val TIME_ACCURACY: Double,
