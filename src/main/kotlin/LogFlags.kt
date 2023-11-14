@@ -1,4 +1,4 @@
-class Config {
+class LogFlags {
 
     companion object{
         var UNIT_LOG = false

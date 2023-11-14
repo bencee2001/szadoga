@@ -1,18 +1,24 @@
 
+import configdsl.config
+import constvalue.DslValues
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import model.*
-import model.types.BatteryType
-import model.types.EngineType
-import model.types.InverterType
-import model.types.LoadbankType
+import model.types.*
 import org.koin.core.context.startKoin
 import simulation.Simulation
 import simulation.SimulationData
+import units.UnitType
 import java.lang.Thread.sleep
 
 suspend fun main(args: Array<String>){
     coroutineScope {
+
+        val testConf = config {
+            typeConfig[Pair(UnitType.INVERTER, InverterType.HUAWEI)] = DslValues()
+        }
+
+        println(testConf)
         val simDa = SimulationData(
             powerPlants = mapOf(
                 1 to PowerPlantData(1, "Hello", 100.0),

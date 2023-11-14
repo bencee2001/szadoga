@@ -1,6 +1,6 @@
 package units
 
-import Config
+import LogFlags
 import constvalue.ConstValues
 import event.InverterEvent
 import event.UnitReadEvent
@@ -50,7 +50,7 @@ class Inverter(
 
     override fun read(): UnitPower {
         val power = readingWithChecks()
-        eventLogging(Config.UNIT_READ_LOG){log(UnitReadEvent(id, power.power, now))}
+        eventLogging(LogFlags.UNIT_READ_LOG){log(UnitReadEvent(id, power.power, now))}
         return power
     }
 
@@ -67,7 +67,7 @@ class Inverter(
                 decreaseProsume()
             }
         }
-        eventLogging(Config.UNIT_LOG) { log(InverterEvent(id, prosume, now)) }
+        eventLogging(LogFlags.UNIT_LOG) { log(InverterEvent(id, prosume, now)) }
     }
 
 
