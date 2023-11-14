@@ -6,12 +6,10 @@ import event.InverterEvent
 import event.UnitReadEvent
 import org.apache.commons.math3.distribution.UniformRealDistribution
 import org.kalasim.*
-import org.kalasim.misc.AmbiguousDuration
 import scheduler.TargetSetTask
 import scheduler.TaskScheduler
 import util.eventLogging
 import kotlin.math.floor
-import kotlin.time.seconds
 
 
 //inverter szintű logging ( inverterId, inverterPower!=inverterReadPower)
@@ -37,9 +35,9 @@ class Inverter(
 
     init{
         lastReadPower = prosume
-        val timeAccuracy = floor(constants.READ_FREQUENCY * constants.INVERTER_TIME_ACCURACY).toInt()
+        val timeAccuracy = floor(constants.READ_FREQUENCY * constants.TIME_ACCURACY).toInt()
         randomReadTime = uniform(constants.READ_FREQUENCY - timeAccuracy, constants.READ_FREQUENCY + timeAccuracy)
-        produceAccuracy = constants.RATED_AC_POWER * constants.INVERTER_PRODUCE_ACCURACY
+        produceAccuracy = constants.RATED_AC_POWER * constants.PRODUCE_ACCURACY
     }
 
 
@@ -47,7 +45,7 @@ class Inverter(
         hold(1)
         taskScheduler.checkTasks()
         changeProsume()
-        //println("Inverter $id: $prosume, $targetOutput, $now")
+        println("Inverter $id: $prosume, $targetOutput, $now")
     }
 
     override fun read(): UnitPower {
@@ -110,7 +108,7 @@ class Inverter(
     }
 
     private fun setTargetProsume(target: Double) {
-        if(floor(target) != floor(lastTargetCommand)) {
+        if(floor(target) != floor(lastTargetCommand)) {  //TODO normális range vizsgálat
             val newTarget = if (target > constants.RATED_AC_POWER) {
                 uniform(constants.RATED_AC_POWER.minus(produceAccuracy), constants.RATED_AC_POWER).invoke()
             } else {

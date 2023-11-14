@@ -1,5 +1,7 @@
 package model
 
+import model.types.LoadbankType
+
 data class LoadbankData(
     val loadbankId: Int,
     val type: LoadbankType,

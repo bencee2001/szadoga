@@ -1,8 +1,6 @@
 package simulation
 
-import model.InverterData
-import model.LoadbankData
-import model.PowerPlantData
+import model.*
 
 
 //PostgreData convert-nél kivenni refernciákat
@@ -11,5 +9,7 @@ data class SimulationData (
     val powerPlants: Map<Int, PowerPlantData> = emptyMap(),
     val inverters: Map<Int, InverterData> = emptyMap(),
     val loadbanks: Map<Int, LoadbankData> = emptyMap(),
+    val engines: Map<Int, EngineData> = emptyMap(),
     val powerPlantIdByProsumerId: Map<Int,Int>,
+    val batteries: Map<Int, BatteryData> = emptyMap()
 )

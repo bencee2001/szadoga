@@ -15,7 +15,7 @@ class PowerController(
      *
      * @param targetByPowerPlantId Map<powerPlantId, powerPlantTarget>
      */
-    suspend fun commandParks(targetByPowerPlantId: Map<Int, Int>){
+    fun commandParks(targetByPowerPlantId: Map<Int, Int>){
         targetByPowerPlantId.forEach { (powerPlantId,  target)->
             val park = parkList.first{it.parkId == powerPlantId}
             park.setTargetPower(RouterLogic.getTargetByUnits(park, target.toDouble()))

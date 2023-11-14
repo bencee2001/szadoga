@@ -1,5 +1,7 @@
 package model
 
+import model.types.InverterType
+
 data class InverterData (
     val inverterId: Int,
     val powerPlantId: Int,

@@ -6,6 +6,6 @@ interface ConstValues {
     val RATED_AC_POWER: Double
     val READ_FREQUENCY: Int //sec
     val POWER_CONTROL_REACTION_TIME: Int //sec
-    val INVERTER_TIME_ACCURACY: Double //%
-    val INVERTER_PRODUCE_ACCURACY: Double //%
+    val TIME_ACCURACY: Double //%
+    val PRODUCE_ACCURACY: Double //%
 }

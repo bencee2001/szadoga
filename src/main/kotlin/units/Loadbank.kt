@@ -10,9 +10,9 @@ class Loadbank(
     private var temp: Double = 0.0,
     private var tempTarget: Double = 0.0,
     constants: ConstValues,
-    targetOutput: Double = 0.0,
+    startTargetOutput: Double = 0.0,
     hasError: Boolean
-): AbstractUnit(loadbankId, type = UnitType.LOADBANK, constants, TaskScheduler(), targetOutput, hasError)  {
+): AbstractUnit(loadbankId, type = UnitType.LOADBANK, constants, TaskScheduler(), startTargetOutput, hasError)  {
 
     private val defaultTemp : Double = 10.0
     private val startTemp :Double = 20.0

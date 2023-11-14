@@ -2,7 +2,7 @@ package constvalue
 
 import constvalue.inverter.HuaweiInverterConst
 import constvalue.inverter.TestInverter
-import model.InverterType
+import model.types.InverterType
 
 object ConstByType {
     val map = mapOf(

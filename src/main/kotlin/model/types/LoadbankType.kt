@@ -1,4 +1,4 @@
-package model
+package model.types
 
 enum class LoadbankType {
     UNKNOWN

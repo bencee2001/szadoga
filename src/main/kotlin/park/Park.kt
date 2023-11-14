@@ -1,6 +1,7 @@
 package park
 
 import units.AbstractUnit
+import units.Battery
 import units.UnitPowerMessage
 import units.UnitType
 
@@ -41,5 +42,21 @@ class Park(
         val time = powers.first().tickTime
         val parkPower = powers.filter { it.unitPowerMessage == UnitPowerMessage.PRODUCE }.sumOf { it.power }
         return ParkPower(parkId, parkPower, time)
+    }
+
+    fun isParkHaveBattery(): Boolean{
+        return unitList.any { it.type == UnitType.BATTERY }
+    }
+
+    fun getNotFullBatteries(): List<Battery>{
+        val batteries = unitList.filter { it.type == UnitType.BATTERY }
+        val realBatteries = batteries.map { it as Battery }
+        return realBatteries.filter { !it.isFull() }
+    }
+
+    fun isBatteriesFull(): Boolean{
+        val batteries = unitList.filter { it.type == UnitType.BATTERY }
+        val realBatteries = batteries.map { it as Battery }
+        return realBatteries.all { it.isFull() }
     }
 }

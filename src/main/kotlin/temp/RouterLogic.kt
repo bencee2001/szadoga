@@ -1,10 +1,7 @@
 package temp
 
 import park.Park
-import units.Inverter
-import units.Loadbank
-
-import units.UnitType
+import units.*
 
 class RouterLogic {
     companion object{
@@ -14,16 +11,16 @@ class RouterLogic {
          *
          * @return Map<UnitId, unitTarget>
          */
-        fun getTargetByUnits(park: Park, target: Double): Map<UnitType,Map<Int, Double>>{
-            val targetVal = if(park.maximumOutput < target) park.maximumOutput else target
+        fun getTargetByUnits(park: Park, target: Double): Map<UnitType, Map<Int, Double>> {
+            var targetVal = if (park.maximumOutput < target) park.maximumOutput else target
             val currentProsume = park.getSumProduce()
-            println(currentProsume.power)
             val targetDiff = targetVal - currentProsume.power
-            val targetByUnitId = mutableMapOf<UnitType,Map<Int, Double>>()
+            targetVal += getNewTargetValByBattery(park)
+            val targetByUnitId = mutableMapOf<UnitType, Map<Int, Double>>()
             targetByUnitId[UnitType.INVERTER] = getInverterTargets(park, targetVal)
-            val test = getLoadbankTargets(park, targetDiff.times(-1))
-            println(test.values)
-            targetByUnitId[UnitType.LOADBANK] = test
+            targetByUnitId[UnitType.LOADBANK] = getLoadbankTargets(park, targetDiff.times(-1))
+            targetByUnitId[UnitType.ENGINE] = getEngineTargets(park, targetVal)
+            targetByUnitId[UnitType.BATTERY] = getBatteryTargets(park, targetDiff)
             return targetByUnitId
         }
 
@@ -54,6 +51,23 @@ class RouterLogic {
             return loadbankControlValues
         }
 
+        private fun getEngineTargets(park: Park, targetVal: Double): Map<Int, Double> {
+            val engines = park.unitList.filter { unit -> unit.type == UnitType.ENGINE }.map { unit -> unit as Engine }
+            return engines.associate { it.id to targetVal }
+        }
+
+        private fun getBatteryTargets(park: Park, targetDiff: Double): Map<Int, Double> {
+            val batteries = park.unitList.filter { unit -> unit.type == UnitType.BATTERY }.map { unit -> unit as Battery }
+            val notFullBatteries = batteries.filter { !it.isFull() }
+            val targets = mutableMapOf<Int, Double>()
+            if(targetDiff > 0.0){
+                val fullBatteries = batteries.filter { it.isFull() }
+                targets.putAll(fullBatteries.associate { it.id to -it.constants.DOWN_POWER_CONTROL_PER_TICK })
+            }
+            targets.putAll(notFullBatteries.associate { it.id to it.constants.UP_POWER_CONTROL_PER_TICK })
+            return targets
+        }
+
         private fun calculateLoadbankTarget(targetDiff: Double, maxOutput: Double): Double {
             return if( targetDiff > maxOutput )
                 maxOutput
@@ -61,6 +75,10 @@ class RouterLogic {
                 targetDiff
         }
 
-
+        private fun getNewTargetValByBattery(park: Park): Double {
+            val batteries = park.unitList.filter { it.type == UnitType.BATTERY }.map { it as Battery }
+            val notFullBatteries = batteries.filter { !it.isFull() }
+            return notFullBatteries.sumOf { it.constants.UP_POWER_CONTROL_PER_TICK }
+        }
     }
 }

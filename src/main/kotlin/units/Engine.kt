@@ -1,25 +1,30 @@
 package units
 
+import constvalue.ConstValues
 import org.kalasim.Component
 import org.kalasim.invoke
 import org.kalasim.uniform
+import scheduler.TargetSetTask
+import scheduler.TaskScheduler
 
-/*class Engine(
+class Engine(
     engineId: Int,
-    private val ratedAcPower: Double,
     private val minimumRunningPower: Double,
-    engineProduceAccuracy: Double, //% - 0.2
-    private var prodTarget: Double = 0.0,
+    constants: ConstValues,
+    targetOutput: Double,
     private var produce: Double = 0.0,
-): AbstractUnit(engineId, UnitType.ENGINE) {
+    private val heatUpTimeInTick: Int = 5,
+    hasError: Boolean,
+    private var isStarted: Boolean = false,
+): AbstractUnit(engineId, UnitType.ENGINE, constants, TaskScheduler() ,targetOutput, hasError) {
 
-    private val produceAccuracy: Double = ratedAcPower * engineProduceAccuracy
-    private var hold: Int = 0
+    private val produceAccuracy: Double = constants.RATED_AC_POWER * constants.PRODUCE_ACCURACY
 
 
     override fun repeatedProcess() = sequence<Component> {
-        tickHold()
-        setProduce()
+        hold(1)
+        taskScheduler.checkTasks()
+        println("Engine $id: $produce, $targetOutput, $now")
     }
 
     override fun read(): UnitPower {
@@ -28,29 +33,28 @@ import org.kalasim.uniform
 
 
     override fun command(target: Double) { // not good if every 2 sec change
-        prodTarget = if( target > minimumRunningPower)
-            getRandomizeTarget(target)
-        else
-            0.0
+        if(target == 0.0){
+            isStarted = false
+            targetOutput = 0.0
+        }else{
+            if(target < minimumRunningPower){
+                isStarted = false
+                targetOutput = 0.0
+            }else{
+                if(target !in targetOutput - produceAccuracy..targetOutput + produceAccuracy){
+                    val newTarget = getRandomizeTarget(target)
+                    taskScheduler.addTask(TargetSetTask(this, heatUpTimeInTick, newTarget))
+                }
+            }
+        }
     }
 
     private fun getRandomizeTarget(target: Double): Double{
-
-        val newTarget = uniform(target-produceAccuracy, target + produceAccuracy).invoke()
-        return if(newTarget > ratedAcPower)
-            ratedAcPower
+        val newTarget = uniform(target - produceAccuracy, target + produceAccuracy).invoke()
+        return if (newTarget > constants.RATED_AC_POWER)
+            constants.RATED_AC_POWER
         else
             newTarget
     }
 
-    private fun setProduce() {
-        if (hold == 0)
-            produce = prodTarget
-    }
-
-    private fun tickHold(){
-        if(hold != 0){
-            hold -= 1
-        }
-    }
-}*/
+}
