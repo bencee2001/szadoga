@@ -1,7 +1,11 @@
 package simulation
 
+import configdsl.ConfigDSL
+import configdsl.models.DslTask
+import configdsl.models.DslUnit
 import constvalue.ConstByType
 import constvalue.ConstValues
+import constvalue.CustomValues
 import model.BatteryData
 import model.EngineData
 import model.InverterData
@@ -14,7 +18,7 @@ import powercontrol.PowerController
 import units.*
 import kotlin.time.Duration.Companion.seconds
 
-class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean): Environment(randomSeed = randomSeed) {
+class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, private val config: ConfigDSL? = null): Environment(randomSeed = randomSeed) {
 
     lateinit var powerController: PowerController
 
@@ -85,65 +89,124 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean):
 
     private fun toInverterUnits(inverters: List<InverterData>): List<Inverter> {
         return inverters.map { inv ->
-            val invDefVal = getConstValues( UnitType.INVERTER ,inv.inverterType)
-            Inverter(
-                inverterId = inv.inverterId,
-                target = 0.0,
-                prosume = 0.0,
-                constants = invDefVal,
-                hasError = false
-            )
+            val constants = getConstValues(UnitType.INVERTER, inv.inverterType)
+            val (unitDefValues, unitTasks) = getDefValues(UnitType.INVERTER, inv.inverterId)
+            val inverter = toInverterUnit(unitDefValues, inv, constants)
+            addTaskToUnit(unitTasks, inverter)
+            inverter
         }
     }
 
-
     private fun toLoadbankUnits(loadbanks: List<LoadbankData>): List<Loadbank> {
-        val loadbankUnits = loadbanks.map { ld ->
-            val defVal = getConstValues( UnitType.LOADBANK ,ld.loadbankType)
-            Loadbank(
-                loadbankId =  ld.loadbankId,
-                temp = 0.0,
-                tempTarget = 0.0,
-                constants = defVal,
-                startTargetOutput = 0.0,
-                hasError = false
-            )
+        return loadbanks.map { ld ->
+            val defVal = getConstValues(UnitType.LOADBANK, ld.loadbankType)
+            val (unitDefValues, unitTasks) = getDefValues(UnitType.INVERTER, ld.loadbankId)
+            val loadbank = toLoadbankUnit(unitDefValues, ld, defVal)
+            addTaskToUnit(unitTasks, loadbank)
+            loadbank
         }
-        return loadbankUnits
     }
 
     private fun toEngineUnits(engines: List<EngineData>): List<Engine> {
-        val engineUnits = engines.map{ eng ->
+        return engines.map{ eng ->
             val defVal = getConstValues( UnitType.ENGINE ,eng.engineType)
-            Engine(
-                engineId = eng.engineId,
-                minimumRunningPower = eng.minimumRunningPower,
-                constants = defVal,
-                targetOutput = 0.0,
-                produce = 0.0,
-                heatUpTimeInTick = 5,
-                hasError = false,
-                isStarted = false,
-            )
+            val (unitDefValues, unitTasks) = getDefValues(UnitType.ENGINE, eng.engineId)
+            val engine = toEngineUnit(eng, defVal, unitDefValues)
+            addTaskToUnit(unitTasks, engine)
+            engine
         }
-        return engineUnits
     }
 
     private fun toBatteryUnits(batteries: List<BatteryData>): List<Battery> {
-        val batteryUnits = batteries.map { bty ->
+        return batteries.map { bty ->
             val defVal = getConstValues( UnitType.BATTERY ,bty.batteryType)
-            Battery(
-                batteryId = bty.batteryId,
-                target = 0.0,
-                constants = defVal,
-                charge = 90.0,
-                hasError = false
-            )
+            val (unitDefValues, unitTasks) = getDefValues(UnitType.BATTERY, bty.batteryId)
+            val battery = toBatteryUnit(bty, unitDefValues, defVal)
+            addTaskToUnit(unitTasks, battery)
+            battery
         }
-        return batteryUnits
+
     }
 
+    private fun toInverterUnit(
+        unitDefValues: DslUnit?,
+        inv: InverterData,
+        constants: ConstValues
+    ) = Inverter(
+            inverterId = inv.inverterId,
+            target = unitDefValues?.targetOutput ?: 0.0,
+            prosume = 0.0,
+            constants = constants,
+            hasError = unitDefValues?.hasError ?: false
+        )
+
+    private fun toLoadbankUnit(
+        unitDefValues: DslUnit?,
+        ld: LoadbankData,
+        defVal: ConstValues
+    ) = Loadbank(
+            loadbankId = ld.loadbankId,
+            temp = 0.0,
+            tempTarget = 0.0,
+            constants = defVal,
+            startTargetOutput = unitDefValues?.targetOutput ?: 0.0,
+            hasError = unitDefValues?.hasError ?: false
+        )
+
+    private fun toEngineUnit(
+        eng: EngineData,
+        defVal: ConstValues,
+        unitDefValues: DslUnit?
+    ) = Engine(
+        engineId = eng.engineId,
+        minimumRunningPower = eng.minimumRunningPower,
+        constants = defVal,
+        targetOutput = unitDefValues?.targetOutput ?: 0.0,
+        produce = 0.0,
+        heatUpTimeInTick = 5,
+        hasError = unitDefValues?.hasError ?: false,
+        isStarted = false,
+    )
+
+
+    private fun toBatteryUnit(
+        bty: BatteryData,
+        unitDefValues: DslUnit?,
+        defVal: ConstValues
+    ) = Battery(
+        batteryId = bty.batteryId,
+        target = unitDefValues?.targetOutput ?: 0.0,
+        constants = defVal,
+        charge = 90.0,
+        hasError = unitDefValues?.hasError ?: false
+    )
+
     private fun getConstValues(unitType: UnitType, unitSubType: UnitSubType): ConstValues{
-        return ConstByType.get(Pair(unitType, unitSubType))
+        val configConst = config?.typeConfig?.get(Pair(unitType, unitSubType))
+        val constValues = ConstByType.get(Pair(unitType, unitSubType))
+        return if(configConst == null)
+            constValues
+        else
+            CustomValues(
+                UP_POWER_CONTROL_PER_TICK = configConst.UP_POWER_CONTROL_PER_TICK ?: constValues.UP_POWER_CONTROL_PER_TICK,
+                DOWN_POWER_CONTROL_PER_TICK = configConst.DOWN_POWER_CONTROL_PER_TICK ?: constValues.DOWN_POWER_CONTROL_PER_TICK,
+                RATED_AC_POWER = configConst.RATED_AC_POWER ?: constValues.RATED_AC_POWER,
+                READ_FREQUENCY = configConst.READ_FREQUENCY ?: constValues.READ_FREQUENCY,
+                POWER_CONTROL_REACTION_TIME = configConst.POWER_CONTROL_REACTION_TIME ?: constValues.POWER_CONTROL_REACTION_TIME,
+                TIME_ACCURACY = configConst.TIME_ACCURACY ?: constValues.TIME_ACCURACY,
+                PRODUCE_ACCURACY = configConst.PRODUCE_ACCURACY ?: constValues.PRODUCE_ACCURACY
+            )
+    }
+
+    private fun getDefValues(unitType: UnitType, id: Int): Pair<DslUnit?, List<DslTask>?> {
+        val defValues = config?.unitConfig?.get(Pair(unitType, id))
+        val tasks = config?.unitTasksConfig?.get(Pair(unitType, id))
+        return Pair(defValues, tasks)
+    }
+
+    private fun addTaskToUnit(unitTasks: List<DslTask>?, unit: AbstractUnit) {
+        unitTasks?.forEach {
+            unit.taskScheduler.addTask(it.getTask(unit))
+        }
     }
 }

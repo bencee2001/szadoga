@@ -1,10 +1,9 @@
-
+import org.jetbrains.kotlin.kapt3.base.Kapt.kapt
 
 plugins {
     kotlin("jvm") version "1.8.10"
     application
 }
-
 
 group = "hu.ewiser"
 version = "0.0.1"
@@ -18,9 +17,10 @@ dependencies {
     implementation("org.jetbrains.kotlinx:dataframe:0.12.0")
     //implementation("io.insert-koin:koin-logger-slf4j:3.1.2")
     implementation(files("C:\\Users\\Bence\\Desktop\\kalasim2\\kalasim\\build\\libs\\kalasim-0.11.5.jar"))
+    // https://mvnrepository.com/artifact/com.thinkinglogic.builder/kotlin-builder-annotation
 
     api("io.insert-koin:koin-core:3.3.3")
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
     testImplementation(kotlin("test"))
 }
 

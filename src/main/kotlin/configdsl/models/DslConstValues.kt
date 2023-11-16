@@ -1,6 +1,7 @@
-package constvalue
+package configdsl.models
 
-class DslValues(
+import constvalue.NullConstValues
+data class DslConstValues(
     override val UP_POWER_CONTROL_PER_TICK: Double? = null,
     override val DOWN_POWER_CONTROL_PER_TICK: Double? = null,
     override val RATED_AC_POWER: Double? = null,

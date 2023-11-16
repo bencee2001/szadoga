@@ -1,11 +1,13 @@
 
 import configdsl.config
-import constvalue.DslValues
+import configdsl.models.DslEndErrorTask
+import configdsl.models.DslStartErrorTask
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import model.*
 import model.types.*
 import org.koin.core.context.startKoin
+import scheduler.StartErrorTask
 import simulation.Simulation
 import simulation.SimulationData
 import units.UnitType
@@ -15,10 +17,23 @@ suspend fun main(args: Array<String>){
     coroutineScope {
 
         val testConf = config {
-            typeConfig[Pair(UnitType.INVERTER, InverterType.HUAWEI)] = DslValues()
+            addTypeConfig(UnitType.INVERTER, InverterType.HUAWEI) {
+                UP_POWER_CONTROL_PER_TICK = 2.0
+                READ_FREQUENCY = 6
+            }
+            addUnitConfig(UnitType.INVERTER, 1) {
+                addDefVales {
+                    hasError = false
+                }
+                addTask {
+                    listOf(
+                        DslStartErrorTask(10),
+                        DslEndErrorTask(20)
+                    )
+                }
+            }
         }
 
-        println(testConf)
         val simDa = SimulationData(
             powerPlants = mapOf(
                 1 to PowerPlantData(1, "Hello", 100.0),
@@ -50,7 +65,7 @@ suspend fun main(args: Array<String>){
 
         var i = 0
 
-        val test = Simulation(simDa, 100, true)
+        val test = Simulation(simDa, 100, true, testConf)
         launch {
             test.run(60)
         }
