@@ -16,7 +16,7 @@ dependencies {
     //implementation("com.github.holgerbrandl:kalasim:0.11.6")
     implementation("org.jetbrains.kotlinx:dataframe:0.12.0")
     //implementation("io.insert-koin:koin-logger-slf4j:3.1.2")
-    implementation(files("C:\\Users\\Bence\\Desktop\\kalasim2\\kalasim\\build\\libs\\kalasim-0.11.5.jar"))
+    implementation(files("libs\\kalasim-0.11.5.jar"))
     // https://mvnrepository.com/artifact/com.thinkinglogic.builder/kotlin-builder-annotation
 
     api("io.insert-koin:koin-core:3.3.3")
