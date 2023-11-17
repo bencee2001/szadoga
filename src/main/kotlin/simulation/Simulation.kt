@@ -72,14 +72,12 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
         return PowerController(parkList)
     }
 
-    private fun getLoadbankIdsByPowerPlantId(simData: SimulationData): Map<Int, List<Int>> {
-        val loadbankIdByProsumerId = simData.loadbanks.values.groupBy { it.prosumerId }
-            .mapValues { ld -> ld.value.map { it.loadbankId } }
-        return loadbankIdByProsumerId.mapKeys { simData.powerPlantIdByProsumerId[it.key]!! }
-    }
-
     private fun getInverterIdsByPowerPlantId(simData: SimulationData) = simData.inverters.map { it.value }.groupBy { it.powerPlantId }
         .mapValues { inv -> inv.value.map { it.inverterId } }
+
+    private fun getLoadbankIdsByPowerPlantId(simData: SimulationData) = simData.loadbanks.map { it.value }.groupBy { it.powerPlantId }
+        .mapValues { ld -> ld.value.map { it.loadbankId }  }
+
 
     private fun getEngineIdsByPowerPlant(simData: SimulationData) =
         simData.engines.map { it.value }.groupBy { it.powerPlantId }.mapValues { eng -> eng.value.map { it.engineId } }
@@ -134,6 +132,7 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
         constants: ConstValues
     ) = Inverter(
             inverterId = inv.inverterId,
+            ratedAcPower = inv.ratedAcPower,
             target = unitDefValues?.targetOutput ?: 0.0,
             prosume = 0.0,
             constants = constants,
@@ -148,6 +147,7 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
             loadbankId = ld.loadbankId,
             temp = 0.0,
             tempTarget = 0.0,
+            ratedAcPower = ld.ratedAcPower.toDouble(),
             constants = defVal,
             startTargetOutput = unitDefValues?.targetOutput ?: 0.0,
             hasError = unitDefValues?.hasError ?: false
@@ -160,6 +160,7 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
     ) = Engine(
         engineId = eng.engineId,
         minimumRunningPower = eng.minimumRunningPower,
+        ratedAcPower = eng.ratedAcPower,
         constants = defVal,
         targetOutput = unitDefValues?.targetOutput ?: 0.0,
         produce = 0.0,
@@ -175,6 +176,7 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
         defVal: ConstValues
     ) = Battery(
         batteryId = bty.batteryId,
+        ratedAcPower = bty.ratedAcPower,
         target = unitDefValues?.targetOutput ?: 0.0,
         constants = defVal,
         charge = 90.0,
@@ -190,7 +192,6 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
             CustomValues(
                 UP_POWER_CONTROL_PER_TICK = configConst.UP_POWER_CONTROL_PER_TICK ?: constValues.UP_POWER_CONTROL_PER_TICK,
                 DOWN_POWER_CONTROL_PER_TICK = configConst.DOWN_POWER_CONTROL_PER_TICK ?: constValues.DOWN_POWER_CONTROL_PER_TICK,
-                RATED_AC_POWER = configConst.RATED_AC_POWER ?: constValues.RATED_AC_POWER,
                 READ_FREQUENCY = configConst.READ_FREQUENCY ?: constValues.READ_FREQUENCY,
                 POWER_CONTROL_REACTION_TIME = configConst.POWER_CONTROL_REACTION_TIME ?: constValues.POWER_CONTROL_REACTION_TIME,
                 TIME_ACCURACY = configConst.TIME_ACCURACY ?: constValues.TIME_ACCURACY,

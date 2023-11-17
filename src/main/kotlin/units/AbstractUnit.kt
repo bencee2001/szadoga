@@ -12,6 +12,7 @@ import scheduler.TaskScheduler
 abstract class AbstractUnit(
     val id: Int,
     val type: UnitType,
+    val ratedAcPower: Double,
     val constants: ConstValues,
     val taskScheduler: TaskScheduler,
     var targetOutput: Double,

@@ -8,10 +8,11 @@ import scheduler.TaskScheduler
 class Battery (
     batteryId: Int,
     target: Double,
+    ratedAcPower: Double,
     constants: ConstValues,
     private var charge: Double,
     hasError: Boolean,
-): AbstractUnit(batteryId, UnitType.BATTERY, constants, TaskScheduler(), target, hasError) {
+): AbstractUnit(batteryId, UnitType.BATTERY, ratedAcPower, constants, TaskScheduler(), target, hasError) {
 
     override fun repeatedProcess() = sequence<Component> {
         hold(1)
@@ -36,7 +37,7 @@ class Battery (
 
     private fun changeProsume(){
         if(targetOutput > 0.0) {
-            if (charge < constants.RATED_AC_POWER - constants.UP_POWER_CONTROL_PER_TICK)
+            if (charge < ratedAcPower - constants.UP_POWER_CONTROL_PER_TICK)
                 charge += constants.UP_POWER_CONTROL_PER_TICK
         } else if(targetOutput < 0.0){
             if(charge > constants.DOWN_POWER_CONTROL_PER_TICK)
@@ -45,6 +46,6 @@ class Battery (
     }
 
     fun isFull(): Boolean {
-        return charge > constants.RATED_AC_POWER * 0.8
+        return charge > ratedAcPower * 0.8
     }
 }

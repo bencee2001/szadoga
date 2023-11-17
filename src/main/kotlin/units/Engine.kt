@@ -10,15 +10,16 @@ import scheduler.TaskScheduler
 class Engine(
     engineId: Int,
     private val minimumRunningPower: Double,
+    ratedAcPower: Double,
     constants: ConstValues,
     targetOutput: Double,
     private var produce: Double = 0.0,
     private val heatUpTimeInTick: Int = 5,
     hasError: Boolean,
     private var isStarted: Boolean = false,
-): AbstractUnit(engineId, UnitType.ENGINE, constants, TaskScheduler() ,targetOutput, hasError) {
+): AbstractUnit(engineId, UnitType.ENGINE, ratedAcPower, constants, TaskScheduler() ,targetOutput, hasError) {
 
-    private val produceAccuracy: Double = constants.RATED_AC_POWER * constants.PRODUCE_ACCURACY
+    private val produceAccuracy: Double = ratedAcPower * constants.PRODUCE_ACCURACY
 
 
     override fun repeatedProcess() = sequence<Component> {
@@ -51,8 +52,8 @@ class Engine(
 
     private fun getRandomizeTarget(target: Double): Double{
         val newTarget = uniform(target - produceAccuracy, target + produceAccuracy).invoke()
-        return if (newTarget > constants.RATED_AC_POWER)
-            constants.RATED_AC_POWER
+        return if (newTarget > ratedAcPower)
+            ratedAcPower
         else
             newTarget
     }

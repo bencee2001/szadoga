@@ -15,6 +15,7 @@ import kotlin.math.floor
 //inverter szintű logging ( inverterId, inverterPower!=inverterReadPower)
 class Inverter(
     inverterId: Int,
+    ratedAcPower: Double,
     target: Double,
     constants: ConstValues,
     hasError: Boolean,
@@ -22,6 +23,7 @@ class Inverter(
 ): AbstractUnit
     (id = inverterId,
     type = UnitType.INVERTER,
+    ratedAcPower = ratedAcPower,
     constants = constants,
     taskScheduler = TaskScheduler(),
     targetOutput = target,
@@ -37,7 +39,7 @@ class Inverter(
         lastReadPower = prosume
         val timeAccuracy = floor(constants.READ_FREQUENCY * constants.TIME_ACCURACY).toInt()
         randomReadTime = uniform(constants.READ_FREQUENCY - timeAccuracy, constants.READ_FREQUENCY + timeAccuracy)
-        produceAccuracy = constants.RATED_AC_POWER * constants.PRODUCE_ACCURACY
+        produceAccuracy = ratedAcPower * constants.PRODUCE_ACCURACY
     }
 
 
@@ -109,8 +111,8 @@ class Inverter(
 
     private fun setTargetProsume(target: Double) {
         if(floor(target) != floor(lastTargetCommand)) {  //TODO normális range vizsgálat
-            val newTarget = if (target > constants.RATED_AC_POWER) {
-                uniform(constants.RATED_AC_POWER.minus(produceAccuracy), constants.RATED_AC_POWER).invoke()
+            val newTarget = if (target > ratedAcPower) {
+                uniform(ratedAcPower.minus(produceAccuracy), ratedAcPower).invoke()
             } else {
                 uniform(target - produceAccuracy, target + produceAccuracy).invoke()
             }

@@ -7,17 +7,18 @@ import scheduler.TaskScheduler
 
 class Loadbank(
     loadbankId: Int,
+    ratedAcPower: Double,
     private var temp: Double = 0.0,
     private var tempTarget: Double = 0.0,
     constants: ConstValues,
     startTargetOutput: Double = 0.0,
     hasError: Boolean
-): AbstractUnit(loadbankId, type = UnitType.LOADBANK, constants, TaskScheduler(), startTargetOutput, hasError)  {
+): AbstractUnit(loadbankId, type = UnitType.LOADBANK, ratedAcPower, constants, TaskScheduler(), startTargetOutput, hasError)  {
 
     private val defaultTemp : Double = 10.0
     private val startTemp :Double = 20.0
     private val maxTemp: Double = 90.0
-    private val changeValue: Double = constants.RATED_AC_POWER.div(maxTemp.minus(startTemp))
+    private val changeValue: Double = ratedAcPower.div(maxTemp.minus(startTemp))
     private val tempUpChangePerTick: Double = constants.UP_POWER_CONTROL_PER_TICK.div(changeValue)
     private val tempDownChangePerTick: Double = constants.DOWN_POWER_CONTROL_PER_TICK.div(changeValue)
 
@@ -44,8 +45,8 @@ class Loadbank(
     private fun setTargets(target: Double) {
         val calcTemp = calculateTempFromTarget(target)
         if(target != 0.0) {
-            if (target > constants.RATED_AC_POWER) {
-                targetOutput = constants.RATED_AC_POWER
+            if (target > ratedAcPower) {
+                targetOutput = ratedAcPower
                 tempTarget = maxTemp
             } else {
                 targetOutput = target
@@ -95,7 +96,7 @@ class Loadbank(
             newTemp
     }
 
-    fun calculateConsumeFromTemp(temp: Double): Double{
+    private fun calculateConsumeFromTemp(temp: Double): Double{
         return changeValue.times(temp).minus(changeValue.times(startTemp))
     }
 

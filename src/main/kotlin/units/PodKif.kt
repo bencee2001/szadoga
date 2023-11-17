@@ -7,12 +7,13 @@ import scheduler.TaskScheduler
 
 class PodKif(
     podKifId: Int,
+    ratedAcPower: Double,
     constants: ConstValues,
     startTargetOutput: Double = 0.0,
     private var isProducing: Boolean,
     private val startDelay: Int,
     hasError: Boolean
-): AbstractUnit(podKifId, UnitType.KIF_POD, constants, TaskScheduler(), startTargetOutput, hasError) {
+): AbstractUnit(podKifId, UnitType.KIF_POD, ratedAcPower, constants, TaskScheduler(), startTargetOutput, hasError) {
 
     override fun repeatedProcess() = sequence<Component> {
         hold(1)
@@ -22,7 +23,7 @@ class PodKif(
 
     override fun read(): UnitPower {
         return if (isProducing){
-            UnitPower(id, constants.RATED_AC_POWER, now, UnitPowerMessage.PRODUCE)
+            UnitPower(id, ratedAcPower, now, UnitPowerMessage.PRODUCE)
         } else {
             UnitPower(id, 0.0, now, UnitPowerMessage.PRODUCE)
         }

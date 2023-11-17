@@ -26,9 +26,9 @@ class RouterLogic {
 
         private fun getInverterTargets(park: Park, targetVal: Double): Map<Int, Double> {
             val inverters = park.unitList.filter { unit -> unit.type == UnitType.INVERTER }.map { unit -> unit as Inverter }
-            val inverterSumOutput = inverters.sumOf { it.constants.RATED_AC_POWER }
+            val inverterSumOutput = inverters.sumOf { it.ratedAcPower }
             val avg = targetVal.div(inverterSumOutput)
-            return inverters.associate { it.id to it.constants.RATED_AC_POWER.times(avg) }
+            return inverters.associate { it.id to it.ratedAcPower.times(avg) }
         }
 
         private fun getLoadbankTargets(park: Park, targetDiff: Double): Map<Int, Double> {
@@ -39,11 +39,11 @@ class RouterLogic {
                 val sortedByConsume = loadbankWithConsume.sortedBy { it.second.power }.map { it.first }
                 var buffTargetDiff = targetDiff
                 sortedByConsume.forEach {
-                    val target: Double = calculateLoadbankTarget(buffTargetDiff, it.constants.RATED_AC_POWER)
+                    val target: Double = calculateLoadbankTarget(buffTargetDiff, it.ratedAcPower)
                     loadbankControlValues[it.id] = target
                     if(!it.canNextStart())
                         return@forEach
-                    buffTargetDiff -= it.constants.RATED_AC_POWER
+                    buffTargetDiff -= it.ratedAcPower
                 }
             }else{
                 loadbankControlValues.putAll(loadbanks.associate{ it.id to 0.0 })
