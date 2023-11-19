@@ -11,7 +11,7 @@ class RouterLogic {
          *
          * @return Map<UnitId, unitTarget>
          */
-        fun getTargetByUnits(park: Park, target: Double): Map<UnitType, Map<Int, Double>> {
+        suspend fun getTargetByUnits(park: Park, target: Double): Map<UnitType, Map<Int, Double>> {
             var targetVal = if (park.maximumOutput < target) park.maximumOutput else target
             val currentProsume = park.getSumProduce()
             val targetDiff = targetVal - currentProsume.power

@@ -47,7 +47,7 @@ class Inverter(
         hold(1)
         taskScheduler.checkTasks()
         changeProsume()
-        println("Inverter $id: $prosume, $targetOutput, $now")
+        //println("Inverter $id: $prosume, $targetOutput, $now")
     }
 
     override fun read(): UnitPower {
@@ -57,7 +57,7 @@ class Inverter(
     }
 
     override fun command(target: Double) {
-        require(targetOutput >= 0) {"Inverter $id TargetProsume can't be below 0."}
+        //require(targetOutput >= 0) {"Inverter $id TargetProsume can't be below 0."}
         setTargetProsume(target)
     }
 

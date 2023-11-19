@@ -1,5 +1,6 @@
 package park
 
+import kotlinx.coroutines.coroutineScope
 import units.AbstractUnit
 import units.Battery
 import units.UnitPowerMessage
@@ -17,17 +18,19 @@ class Park(
     val unitList: List<AbstractUnit>
 ){
 
-    fun setTargetPower(targetsByUnitType: Map<UnitType,Map<Int, Double>>){
+    suspend fun setTargetPower(targetsByUnitType: Map<UnitType,Map<Int, Double>>){
         targetsByUnitType.forEach{ (type, targetByUnit) ->
             val unitListByType = unitList.filter { it.type == type }.associateBy { it.id }
             targetByUnit.forEach { (i, target) ->
-                unitListByType[i]?.command(target)
+                coroutineScope {
+                    unitListByType[i]?.command(target)
+                }
             }
         }
     }
 
-    fun getSumConsume(): ParkPower{
-        val powers = unitList.map { it.read() }
+    suspend fun getSumConsume(): ParkPower{
+        val powers = unitList.map { coroutineScope { it.read() } }
         val time = powers.first().tickTime
         val parkPower = powers.sumOf { if (it.unitPowerMessage == UnitPowerMessage.PRODUCE)
                 it.power
@@ -37,8 +40,8 @@ class Park(
         return ParkPower(parkId, parkPower, time)
     }
 
-    fun getSumProduce(): ParkPower{
-        val powers = unitList.map { it.read() }
+    suspend fun getSumProduce(): ParkPower{
+        val powers = unitList.map { coroutineScope { it.read() } }
         val time = powers.first().tickTime
         val parkPower = powers.filter { it.unitPowerMessage == UnitPowerMessage.PRODUCE }.sumOf { it.power }
         return ParkPower(parkId, parkPower, time)

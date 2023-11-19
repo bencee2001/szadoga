@@ -15,14 +15,23 @@ class PowerController(
      *
      * @param targetByPowerPlantId Map<powerPlantId, powerPlantTarget>
      */
-    fun commandParks(targetByPowerPlantId: Map<Int, Int>){
+    suspend fun commandParks(targetByPowerPlantId: Map<Int, Int>){
         targetByPowerPlantId.forEach { (powerPlantId,  target)->
             val park = parkList.first{it.parkId == powerPlantId}
             park.setTargetPower(RouterLogic.getTargetByUnits(park, target.toDouble()))
         }
     }
 
-    fun readParks(): List<ParkPower>{
-        return parkList.map { it.getSumConsume() }
+    suspend fun readParks(): List<ParkPower>{
+        return parkList.map {
+            it.getSumConsume()
+        }
+    }
+
+    suspend fun readParksById(powerPlantIds: List<Int>): List<ParkPower>?{
+        val parks = parkList.filter { it.parkId in powerPlantIds }
+        if(parks.isEmpty())
+            return null
+        return parks.map { it.getSumConsume() }
     }
 }

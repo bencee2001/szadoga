@@ -14,7 +14,7 @@ import units.UnitType
 import java.lang.Thread.sleep
 
 suspend fun main(args: Array<String>){
-    coroutineScope {
+    /*coroutineScope {
 
         val testConf = config {
             addTypeConfig(UnitType.INVERTER, InverterType.HUAWEI) {
@@ -80,5 +80,5 @@ suspend fun main(args: Array<String>){
             }
             sleep(2_000)
         }
-    }
+    }*/
 }
