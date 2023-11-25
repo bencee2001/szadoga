@@ -4,6 +4,7 @@ import configdsl.models.DslEndErrorTask
 import configdsl.models.DslStartErrorTask
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Instant
 import model.*
 import model.types.*
 import org.koin.core.context.startKoin
@@ -14,9 +15,10 @@ import units.UnitType
 import java.lang.Thread.sleep
 
 suspend fun main(args: Array<String>){
-    /*coroutineScope {
+    coroutineScope {
 
         val testConf = config {
+            addDefaultProduceConfig(UnitType.INVERTER, 0.5)
             addTypeConfig(UnitType.INVERTER, InverterType.HUAWEI) {
                 UP_POWER_CONTROL_PER_TICK = 2.0
                 READ_FREQUENCY = 6
@@ -65,9 +67,9 @@ suspend fun main(args: Array<String>){
 
         var i = 0
 
-        val test = Simulation(simDa, 100, true, testConf)
+        val test = Simulation(simDa, 100, true)
         launch {
-            test.run(60)
+            test.runWithSave(60)
         }
 
         while(true){
@@ -80,5 +82,5 @@ suspend fun main(args: Array<String>){
             }
             sleep(2_000)
         }
-    }*/
+    }
 }

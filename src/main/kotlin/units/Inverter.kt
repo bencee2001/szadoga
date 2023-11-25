@@ -47,12 +47,15 @@ class Inverter(
         hold(1)
         taskScheduler.checkTasks()
         changeProsume()
+        if(prosume == 0.0)
+            println()
+        eventLogging(LogFlags.UNIT_READ_LOG){ log(UnitReadEvent(id, type, 0, ratedAcPower.toInt(), prosume.toInt(), lastTargetCommand.toInt(),  now)) }
+
         //println("Inverter $id: $prosume, $targetOutput, $now")
     }
 
     override fun read(): UnitPower {
         val power = readingWithChecks()
-        eventLogging(LogFlags.UNIT_READ_LOG){log(UnitReadEvent(id, power.power, now))}
         return power
     }
 
@@ -69,7 +72,6 @@ class Inverter(
                 decreaseProsume()
             }
         }
-        eventLogging(LogFlags.UNIT_LOG) { log(InverterEvent(id, prosume, now)) }
     }
 
 
@@ -84,12 +86,13 @@ class Inverter(
 
     private fun decreaseProsume(){
         val newProsume = prosume - constants.DOWN_POWER_CONTROL_PER_TICK
-        prosume = if(newProsume < 0.0){
-            0.0
-        } else  if (newProsume < targetOutput){
+        prosume = if (newProsume < targetOutput){
             targetOutput
         } else {
-            newProsume
+            if(newProsume < 0.0)
+                0.0
+            else
+                newProsume
         }
     }
 

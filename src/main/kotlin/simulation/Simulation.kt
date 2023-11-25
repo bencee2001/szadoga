@@ -1,16 +1,22 @@
 package simulation
 
+import LogFlags
 import configdsl.ConfigDSL
 import configdsl.models.DslTask
 import configdsl.models.DslUnit
 import constvalue.ConstByType
 import constvalue.ConstValues
 import constvalue.CustomValues
+import event.ParkReadEvent
+import event.UnitReadEvent
 import model.BatteryData
 import model.EngineData
 import model.InverterData
 import model.LoadbankData
 import model.types.UnitSubType
+import org.jetbrains.kotlinx.dataframe.api.toDataFrame
+import org.jetbrains.kotlinx.dataframe.io.writeCSV
+import org.joda.time.DateTime
 import org.kalasim.ClockSync
 import org.kalasim.Environment
 import park.Park
@@ -22,12 +28,26 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
 
     lateinit var powerController: PowerController
 
+    val unitEventLog = mutableListOf<UnitReadEvent>()
+    val parkEventLog = mutableListOf<ParkReadEvent>()
+
     init {
         this.apply {
             if(inRealTime) ClockSync(tickDuration = 1.seconds)
+            if(LogFlags.UNIT_READ_LOG) addEventListener{ it: UnitReadEvent -> unitEventLog.add(it) }
+            if(LogFlags.PARK_READ_LOG) addEventListener{ it: ParkReadEvent -> parkEventLog.add(it) }
             powerController = setPowerController(simData)
-            //powerController.commandParks(mapOf(1 to 30)) //TODO
         }
+    }
+
+    fun runWithSave(time: Int? = null){
+        val startDate = DateTime().millis
+        run(time)
+        val endDate = DateTime().millis
+        if (LogFlags.UNIT_READ_LOG)
+            unitEventLog.toDataFrame().writeCSV("src\\main\\LogResults\\unitLog$startDate-$endDate.csv")
+        if(LogFlags.PARK_READ_LOG)
+            parkEventLog.toDataFrame().writeCSV("src\\main\\LogResults\\parkLog$startDate-$endDate.csv")
     }
 
     private fun setPowerController(simData: SimulationData): PowerController{
@@ -87,7 +107,7 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
 
     private fun toInverterUnits(inverters: List<InverterData>): List<Inverter> {
         return inverters.map { inv ->
-            val constants = getConstValues(UnitType.INVERTER, inv.inverterType)
+            val constants = getConstValues(UnitType.INVERTER, inv.inverterType, inv.ratedAcPower)
             val (unitDefValues, unitTasks) = getDefValues(UnitType.INVERTER, inv.inverterId)
             val inverter = toInverterUnit(unitDefValues, inv, constants)
             addTaskToUnit(unitTasks, inverter)
@@ -133,7 +153,7 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
     ) = Inverter(
             inverterId = inv.inverterId,
             ratedAcPower = inv.ratedAcPower,
-            target = unitDefValues?.targetOutput ?: 0.0,
+            target = unitDefValues?.targetOutput ?: getDefaultProducing(UnitType.INVERTER, inv.ratedAcPower) ?: 0.0,
             prosume = 0.0,
             constants = constants,
             hasError = unitDefValues?.hasError ?: false
@@ -149,7 +169,7 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
             tempTarget = 0.0,
             ratedAcPower = ld.ratedAcPower.toDouble(),
             constants = defVal,
-            startTargetOutput = unitDefValues?.targetOutput ?: 0.0,
+            startTargetOutput = unitDefValues?.targetOutput ?: getDefaultProducing(UnitType.LOADBANK, ld.ratedAcPower.toDouble()) ?: 0.0,
             hasError = unitDefValues?.hasError ?: false
         )
 
@@ -162,7 +182,7 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
         minimumRunningPower = eng.minimumRunningPower,
         ratedAcPower = eng.ratedAcPower,
         constants = defVal,
-        targetOutput = unitDefValues?.targetOutput ?: 0.0,
+        targetOutput = unitDefValues?.targetOutput ?: getDefaultProducing(UnitType.ENGINE, eng.ratedAcPower) ?: 0.0,
         produce = 0.0,
         heatUpTimeInTick = 5,
         hasError = unitDefValues?.hasError ?: false,
@@ -177,26 +197,31 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
     ) = Battery(
         batteryId = bty.batteryId,
         ratedAcPower = bty.ratedAcPower,
-        target = unitDefValues?.targetOutput ?: 0.0,
+        target = unitDefValues?.targetOutput ?: getDefaultProducing(UnitType.BATTERY, bty.ratedAcPower) ?: 0.0,
         constants = defVal,
         charge = 90.0,
         hasError = unitDefValues?.hasError ?: false
     )
 
-    private fun getConstValues(unitType: UnitType, unitSubType: UnitSubType): ConstValues{
+    private fun getConstValues(unitType: UnitType, unitSubType: UnitSubType, ratedAcPower: Double? = null): ConstValues{ // TODO kivenni acPower-t
         val configConst = config?.typeConfig?.get(Pair(unitType, unitSubType))
         val constValues = ConstByType.get(Pair(unitType, unitSubType))
-        return if(configConst == null)
-            constValues
-        else
-            CustomValues(
-                UP_POWER_CONTROL_PER_TICK = configConst.UP_POWER_CONTROL_PER_TICK ?: constValues.UP_POWER_CONTROL_PER_TICK,
-                DOWN_POWER_CONTROL_PER_TICK = configConst.DOWN_POWER_CONTROL_PER_TICK ?: constValues.DOWN_POWER_CONTROL_PER_TICK,
-                READ_FREQUENCY = configConst.READ_FREQUENCY ?: constValues.READ_FREQUENCY,
-                POWER_CONTROL_REACTION_TIME = configConst.POWER_CONTROL_REACTION_TIME ?: constValues.POWER_CONTROL_REACTION_TIME,
-                TIME_ACCURACY = configConst.TIME_ACCURACY ?: constValues.TIME_ACCURACY,
-                PRODUCE_ACCURACY = configConst.PRODUCE_ACCURACY ?: constValues.PRODUCE_ACCURACY
+        return CustomValues(
+                UP_POWER_CONTROL_PER_TICK = ratedAcPower ?: configConst?.UP_POWER_CONTROL_PER_TICK ?: constValues.UP_POWER_CONTROL_PER_TICK,
+                DOWN_POWER_CONTROL_PER_TICK = ratedAcPower ?: configConst?.DOWN_POWER_CONTROL_PER_TICK ?: constValues.DOWN_POWER_CONTROL_PER_TICK,
+                READ_FREQUENCY = configConst?.READ_FREQUENCY ?: constValues.READ_FREQUENCY,
+                POWER_CONTROL_REACTION_TIME = configConst?.POWER_CONTROL_REACTION_TIME ?: constValues.POWER_CONTROL_REACTION_TIME,
+                TIME_ACCURACY = configConst?.TIME_ACCURACY ?: constValues.TIME_ACCURACY,
+                PRODUCE_ACCURACY = configConst?.PRODUCE_ACCURACY ?: constValues.PRODUCE_ACCURACY
             )
+    }
+
+    private fun getDefaultProducing(unitType: UnitType, ratedAcPower: Double): Double?{
+        val defProd = config?.defaultProduceConfig?.get(unitType)
+        return if (defProd == null)
+            null
+        else
+            ratedAcPower.times(defProd)
     }
 
     private fun getDefValues(unitType: UnitType, id: Int): Pair<DslUnit?, List<DslTask>?> {

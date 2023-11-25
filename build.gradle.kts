@@ -15,12 +15,15 @@ repositories {
 dependencies {
     //implementation("com.github.holgerbrandl:kalasim:0.11.6")
     implementation("org.jetbrains.kotlinx:dataframe:0.12.0")
-    //implementation("io.insert-koin:koin-logger-slf4j:3.1.2")
+    //implementation("io.insert-koin:koin-logger-slf4j:3.3.1")
     implementation(files("libs\\kalasim-0.11.5.jar"))
     // https://mvnrepository.com/artifact/com.thinkinglogic.builder/kotlin-builder-annotation
 
-    api("io.insert-koin:koin-core:3.3.3")
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
+    //implementation("ch.qos.logback:logback-classic:1.4.8")
+    //implementation("org.slf4j:slf4j-api:2.0.7")
+
+    implementation("io.insert-koin:koin-core:3.3.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
     testImplementation(kotlin("test"))
 }
 

@@ -1,8 +1,4 @@
-class LogFlags {
-
-    companion object{
-        var UNIT_LOG = false
-        var UNIT_READ_LOG = false
-        var PARK_LOG = false
-    }
+object LogFlags {
+    var UNIT_READ_LOG = true
+    var PARK_READ_LOG = false
 }

@@ -1,10 +1,14 @@
 package park
 
+import LogFlags
+import event.ParkReadEvent
 import kotlinx.coroutines.coroutineScope
+import org.kalasim.Component
 import units.AbstractUnit
 import units.Battery
 import units.UnitPowerMessage
 import units.UnitType
+import util.eventLogging
 
 // Lehet több fajta router egy parkban?(inverter,loadbank, engine)
 // Routerek között elosztódik a target power, hogyan??
@@ -16,7 +20,7 @@ class Park(
     val parkName: String,
     val maximumOutput: Double,
     val unitList: List<AbstractUnit>
-){
+): Component(){
 
     suspend fun setTargetPower(targetsByUnitType: Map<UnitType,Map<Int, Double>>){
         targetsByUnitType.forEach{ (type, targetByUnit) ->
@@ -37,14 +41,15 @@ class Park(
             else
                 -it.power
         }
-        return ParkPower(parkId, parkPower, time)
+        eventLogging(LogFlags.PARK_READ_LOG){ log(ParkReadEvent(parkId, parkName, parkPower, now))}
+        return ParkPower(parkId,maximumOutput, parkPower, time)
     }
 
     suspend fun getSumProduce(): ParkPower{
         val powers = unitList.map { coroutineScope { it.read() } }
         val time = powers.first().tickTime
         val parkPower = powers.filter { it.unitPowerMessage == UnitPowerMessage.PRODUCE }.sumOf { it.power }
-        return ParkPower(parkId, parkPower, time)
+        return ParkPower(parkId, maximumOutput, parkPower, time)
     }
 
     fun isParkHaveBattery(): Boolean{

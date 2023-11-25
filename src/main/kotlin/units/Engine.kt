@@ -25,6 +25,7 @@ class Engine(
     override fun repeatedProcess() = sequence<Component> {
         hold(1)
         taskScheduler.checkTasks()
+        changeProduce()
         println("Engine $id: $produce, $targetOutput, $now")
     }
 
@@ -56,6 +57,10 @@ class Engine(
             ratedAcPower
         else
             newTarget
+    }
+
+    private fun changeProduce(){
+        produce = targetOutput
     }
 
 }
