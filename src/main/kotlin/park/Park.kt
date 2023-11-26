@@ -22,7 +22,11 @@ class Park(
     val unitList: List<AbstractUnit>
 ): Component(){
 
-    suspend fun setTargetPower(targetsByUnitType: Map<UnitType,Map<Int, Double>>){
+    private var targetPower: Int = 0
+
+
+    suspend fun setTargetPower(target: Int, targetsByUnitType: Map<UnitType,Map<Int, Double>>){
+        targetPower = target
         targetsByUnitType.forEach{ (type, targetByUnit) ->
             val unitListByType = unitList.filter { it.type == type }.associateBy { it.id }
             targetByUnit.forEach { (i, target) ->
@@ -41,7 +45,7 @@ class Park(
             else
                 -it.power
         }
-        eventLogging(LogFlags.PARK_READ_LOG){ log(ParkReadEvent(parkId, parkName, parkPower, now))}
+        eventLogging(LogFlags.PARK_READ_LOG){ log(ParkReadEvent(parkId, parkName, parkPower, targetPower ,now))}
         return ParkPower(parkId,maximumOutput, parkPower, time)
     }
 

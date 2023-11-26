@@ -47,8 +47,6 @@ class Inverter(
         hold(1)
         taskScheduler.checkTasks()
         changeProsume()
-        if(prosume == 0.0)
-            println()
         eventLogging(LogFlags.UNIT_READ_LOG){ log(UnitReadEvent(id, type, 0, ratedAcPower.toInt(), prosume.toInt(), lastTargetCommand.toInt(),  now)) }
 
         //println("Inverter $id: $prosume, $targetOutput, $now")

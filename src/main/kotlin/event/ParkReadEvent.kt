@@ -7,5 +7,12 @@ class ParkReadEvent(
     val powerPlantId: Int,
     val powerPlantName: String,
     val producedPower: Double,
+    val targetPower: Int,
     time: TickTime
-): Event(time)
+): Event(time){
+    val tick: Int
+
+    init {
+        tick = time.toString().toDouble().toInt()
+    }
+}

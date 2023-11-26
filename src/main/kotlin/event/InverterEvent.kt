@@ -7,4 +7,11 @@ class InverterEvent(
     val inverterId: Int,
     val producing: Double,
     time: TickTime
-): Event(time)
+): Event(time){
+    val tick: Int
+
+    init {
+        tick = time.toString().toInt()
+    }
+
+}

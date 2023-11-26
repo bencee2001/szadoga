@@ -14,6 +14,7 @@ import model.EngineData
 import model.InverterData
 import model.LoadbankData
 import model.types.UnitSubType
+import org.jetbrains.kotlinx.dataframe.api.drop
 import org.jetbrains.kotlinx.dataframe.api.toDataFrame
 import org.jetbrains.kotlinx.dataframe.io.writeCSV
 import org.joda.time.DateTime
@@ -22,6 +23,8 @@ import org.kalasim.Environment
 import park.Park
 import powercontrol.PowerController
 import units.*
+import util.PATH
+import util.fileNameDateFormater
 import kotlin.time.Duration.Companion.seconds
 
 class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, private val config: ConfigDSL? = null): Environment(randomSeed = randomSeed) {
@@ -40,14 +43,20 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
         }
     }
 
-    fun runWithSave(time: Int? = null){
-        val startDate = DateTime().millis
+    fun runWithSave(time: Int, unitLogFileName: String? = null, parkLogFileName: String? = null) {
+        val startDate = DateTime()
         run(time)
-        val endDate = DateTime().millis
-        if (LogFlags.UNIT_READ_LOG)
-            unitEventLog.toDataFrame().writeCSV("src\\main\\LogResults\\unitLog$startDate-$endDate.csv")
-        if(LogFlags.PARK_READ_LOG)
-            parkEventLog.toDataFrame().writeCSV("src\\main\\LogResults\\parkLog$startDate-$endDate.csv")
+        if (LogFlags.UNIT_READ_LOG) {
+            val name = unitLogFileName?.let { "$it.csv" } ?: "unitLog${fileNameDateFormater.print(startDate)}.csv"
+            unitEventLog.toDataFrame().drop(2)
+                .writeCSV("${PATH}\\$name")
+
+        }
+        if (LogFlags.PARK_READ_LOG) {
+            val name = parkLogFileName?.let { "$it.csv" } ?: "parkLog${fileNameDateFormater.print(startDate)}.csv"
+            parkEventLog.toDataFrame()
+                .writeCSV("${PATH}\\$name")
+        }
     }
 
     private fun setPowerController(simData: SimulationData): PowerController{

@@ -13,4 +13,11 @@ class UnitReadEvent(
     val power: Int,
     val currentTarget: Int,
     time: TickTime
-): Event(time)
+): Event(time){
+
+    val tick: Int
+
+    init {
+        tick = time.toString().toDouble().toInt()
+    }
+}
