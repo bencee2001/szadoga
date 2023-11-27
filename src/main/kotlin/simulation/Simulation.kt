@@ -163,7 +163,7 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
             inverterId = inv.inverterId,
             ratedAcPower = inv.ratedAcPower,
             target = unitDefValues?.targetOutput ?: getDefaultProducing(UnitType.INVERTER, inv.ratedAcPower) ?: 0.0,
-            prosume = 0.0,
+            produce = 0.0,
             constants = constants,
             hasError = unitDefValues?.hasError ?: false
         )

@@ -2,11 +2,11 @@ package constvalue.inverter
 
 import constvalue.ConstValues
 
-object HuaweiInverter: ConstValues {
+object SMAManagerInverter: ConstValues {
     override val UP_POWER_CONTROL_PER_TICK = -1.0 // +option
     override val DOWN_POWER_CONTROL_PER_TICK = -1.0 // +option
-    override val READ_FREQUENCY = 5  //sec
-    override val POWER_CONTROL_REACTION_TIME = 5  //sec
-    override val TIME_ACCURACY = 0.2
+    override val READ_FREQUENCY = 2
+    override val POWER_CONTROL_REACTION_TIME = 2
+    override val TIME_ACCURACY = 0.22
     override val PRODUCE_ACCURACY = 0.0
 }

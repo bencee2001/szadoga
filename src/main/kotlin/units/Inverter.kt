@@ -2,7 +2,6 @@ package units
 
 import LogFlags
 import constvalue.ConstValues
-import event.InverterEvent
 import event.UnitReadEvent
 import org.apache.commons.math3.distribution.UniformRealDistribution
 import org.kalasim.*
@@ -11,15 +10,13 @@ import scheduler.TaskScheduler
 import util.eventLogging
 import kotlin.math.floor
 
-
-//inverter szintű logging ( inverterId, inverterPower!=inverterReadPower)
 class Inverter(
     inverterId: Int,
     ratedAcPower: Double,
     target: Double,
     constants: ConstValues,
     hasError: Boolean,
-    private var prosume: Double = 0.0,
+    private var produce: Double = 0.0,
 ): AbstractUnit
     (id = inverterId,
     type = UnitType.INVERTER,
@@ -36,10 +33,11 @@ class Inverter(
     private var lastTargetCommand: Double = 0.0
 
     init{
-        lastReadPower = prosume
-        val timeAccuracy = floor(constants.READ_FREQUENCY * constants.TIME_ACCURACY).toInt()
+        lastReadPower = produce
+        val timeAccuracy = constants.READ_FREQUENCY * constants.TIME_ACCURACY + 0.1
+        println("timeAccuracy: ${constants.READ_FREQUENCY}----------------$timeAccuracy")
         randomReadTime = uniform(constants.READ_FREQUENCY - timeAccuracy, constants.READ_FREQUENCY + timeAccuracy)
-        produceAccuracy = ratedAcPower * constants.PRODUCE_ACCURACY
+        produceAccuracy = ratedAcPower * constants.PRODUCE_ACCURACY + 0.1
     }
 
 
@@ -47,7 +45,7 @@ class Inverter(
         hold(1)
         taskScheduler.checkTasks()
         changeProsume()
-        eventLogging(LogFlags.UNIT_READ_LOG){ log(UnitReadEvent(id, type, 0, ratedAcPower.toInt(), prosume.toInt(), lastTargetCommand.toInt(),  now)) }
+        eventLogging(LogFlags.UNIT_READ_LOG){ log(UnitReadEvent(id, type, 0, ratedAcPower.toInt(), produce.toInt(), lastTargetCommand.toInt(),  now)) }
 
         //println("Inverter $id: $prosume, $targetOutput, $now")
     }
@@ -63,8 +61,8 @@ class Inverter(
     }
 
     private fun changeProsume() {
-        if (prosume != targetOutput) {
-            if (targetOutput > prosume) {
+        if (produce != targetOutput) {
+            if (targetOutput > produce) {
                 increaseProsume()
             } else {
                 decreaseProsume()
@@ -74,8 +72,8 @@ class Inverter(
 
 
     private fun increaseProsume(){  //TODO jó-e?
-        val newProsume = prosume + constants.UP_POWER_CONTROL_PER_TICK
-        prosume = if (newProsume > targetOutput){
+        val newProsume = produce + constants.UP_POWER_CONTROL_PER_TICK
+        produce = if (newProsume > targetOutput){
             targetOutput
         } else {
             newProsume
@@ -83,8 +81,8 @@ class Inverter(
     }
 
     private fun decreaseProsume(){
-        val newProsume = prosume - constants.DOWN_POWER_CONTROL_PER_TICK
-        prosume = if (newProsume < targetOutput){
+        val newProsume = produce - constants.DOWN_POWER_CONTROL_PER_TICK
+        produce = if (newProsume < targetOutput){
             targetOutput
         } else {
             if(newProsume < 0.0)
@@ -98,9 +96,9 @@ class Inverter(
         return if(!hasError) {
             if (now.minus(lastReadTime) > constants.READ_FREQUENCY) {
                 lastReadTime = now
-                lastReadPower = prosume
-                prosume
-                UnitPower(id, prosume, now, UnitPowerMessage.PRODUCE)
+                lastReadPower = produce
+                produce
+                UnitPower(id, produce, now, UnitPowerMessage.PRODUCE)
             } else {
                 lastReadPower
                 UnitPower(id, lastReadPower, lastReadTime, UnitPowerMessage.PRODUCE)
@@ -112,15 +110,23 @@ class Inverter(
 
     private fun setTargetProsume(target: Double) {
         if(floor(target) != floor(lastTargetCommand)) {  //TODO normális range vizsgálat
-            val newTarget = if (target > ratedAcPower) {
-                uniform(ratedAcPower.minus(produceAccuracy), ratedAcPower).invoke()
-            } else {
-                uniform(target - produceAccuracy, target + produceAccuracy).invoke()
-            }
+            val newTarget = getNewTarget(target)
             lastTargetCommand = target
             val holdInInt = randomReadTime().toInt()
+            println("holdInInt: $holdInInt")
             taskScheduler.addTask(TargetSetTask(this, holdInInt, newTarget))
         }
+    }
+
+    private fun getNewTarget(target: Double): Double{
+        val newTarget = uniform(target - produceAccuracy, target + produceAccuracy).invoke()
+        return if(newTarget > target)
+            target
+        else if(newTarget < 0.0)
+            0.0
+        else
+            newTarget
+
     }
 
 
