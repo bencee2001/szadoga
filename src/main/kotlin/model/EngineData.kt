@@ -7,5 +7,6 @@ data class EngineData(
     val powerPlantId: Int,
     val ratedAcPower: Double,
     val minimumRunningPower: Double,
-    val engineType: EngineType
+    val heatUpTime: Int,
+    val engineType: EngineType,
 )

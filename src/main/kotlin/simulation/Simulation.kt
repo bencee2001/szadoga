@@ -8,7 +8,7 @@ import constvalue.ConstByType
 import constvalue.ConstValues
 import constvalue.CustomValues
 import event.ParkReadEvent
-import event.UnitReadEvent
+import event.ProducerReadEvent
 import model.BatteryData
 import model.EngineData
 import model.InverterData
@@ -31,13 +31,13 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
 
     lateinit var powerController: PowerController
 
-    val unitEventLog = mutableListOf<UnitReadEvent>()
+    val unitEventLog = mutableListOf<ProducerReadEvent>()
     val parkEventLog = mutableListOf<ParkReadEvent>()
 
     init {
         this.apply {
             if(inRealTime) ClockSync(tickDuration = 1.seconds)
-            if(LogFlags.UNIT_READ_LOG) addEventListener{ it: UnitReadEvent -> unitEventLog.add(it) }
+            if(LogFlags.UNIT_READ_LOG) addEventListener{ it: ProducerReadEvent -> unitEventLog.add(it) }
             if(LogFlags.PARK_READ_LOG) addEventListener{ it: ParkReadEvent -> parkEventLog.add(it) }
             powerController = setPowerController(simData)
         }
@@ -193,7 +193,7 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
         constants = defVal,
         targetOutput = unitDefValues?.targetOutput ?: getDefaultProducing(UnitType.ENGINE, eng.ratedAcPower) ?: 0.0,
         produce = 0.0,
-        heatUpTimeInTick = 5,
+        heatUpTimeInTick = eng.heatUpTime,
         hasError = unitDefValues?.hasError ?: false,
         isStarted = false,
     )

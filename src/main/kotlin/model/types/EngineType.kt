@@ -1,5 +1,7 @@
 package model.types
 
 enum class EngineType: UnitSubType {
-    TEST
+    TEST,
+    JENBACHER,
+    UNKNOWN
 }

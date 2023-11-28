@@ -1,11 +1,15 @@
 package units
 
 import constvalue.ConstValues
-import org.kalasim.Component
+import event.ProducerReadEvent
 import org.kalasim.invoke
 import org.kalasim.uniform
+import scheduler.EngineStartTask
 import scheduler.TargetSetTask
 import scheduler.TaskScheduler
+import scheduler.TaskType
+import util.eventLogging
+import kotlin.time.Duration.Companion.minutes
 
 class Engine(
     engineId: Int,
@@ -16,42 +20,95 @@ class Engine(
     private var produce: Double = 0.0,
     private val heatUpTimeInTick: Int = 5,
     hasError: Boolean,
-    private var isStarted: Boolean = false,
-): AbstractUnit(engineId, UnitType.ENGINE, ratedAcPower, constants, TaskScheduler() ,targetOutput, hasError) {
+    var isStarted: Boolean = false,
+) : AbstractUnit(
+    id = engineId,
+    type = UnitType.ENGINE,
+    ratedAcPower = ratedAcPower,
+    constants  = constants,
+    taskScheduler = TaskScheduler(),
+    targetOutput = targetOutput,
+    hasError = hasError,
+    lastReadPower = produce
+) {
 
     private val produceAccuracy: Double = ratedAcPower * constants.PRODUCE_ACCURACY
 
-
-    override fun repeatedProcess() = sequence<Component> {
-        hold(1)
+    override fun repeatedProcess() = sequence{
+        hold(1.minutes)
         taskScheduler.checkTasks()
         changeProduce()
-        println("Engine $id: $produce, $targetOutput, $now")
+        println("Engine $id: $produce, $lastTargetCommand, $now")
     }
 
-    override fun read(): UnitPower {
+    override fun read(): UnitPower{
+        val power = super.read()
+        eventLogging(LogFlags.UNIT_READ_LOG) {
+            log(
+                ProducerReadEvent(
+                    id,
+                    type,
+                    0,
+                    ratedAcPower.toInt(),
+                    power.power.toInt(),
+                    lastTargetCommand.toInt(),
+                    now
+                )
+            )
+        }
+        return power
+    }
+
+    override fun readNewValue(): UnitPower {
+        lastReadTime = now
+        lastReadPower = produce
         return UnitPower(id, produce, now, UnitPowerMessage.PRODUCE)
+    }
+
+    override fun readOldValue(): UnitPower {
+        return UnitPower(id, lastReadPower, lastReadTime, UnitPowerMessage.PRODUCE)
     }
 
 
     override fun command(target: Double) { // not good if every 2 sec change
-        if(target == 0.0){
+        if(target == 0.0 || target < minimumRunningPower){
             isStarted = false
+            lastTargetCommand = 0.0
             targetOutput = 0.0
+            val engineStartTask = taskScheduler.getTaskByType(TaskType.ENGINE_START).firstOrNull()
+            engineStartTask?.let { taskScheduler.removeTask(it) }
         }else{
-            if(target < minimumRunningPower){
-                isStarted = false
-                targetOutput = 0.0
-            }else{
-                if(target !in targetOutput - produceAccuracy..targetOutput + produceAccuracy){
+            if(!isStarted){
+                isStarted = true
+                val newTarget = getRandomizeTarget(target)
+                lastTargetCommand = newTarget
+                taskScheduler.addTask(EngineStartTask(this, heatUpTimeInTick, newTarget))
+            } else {
+                if (target !in targetOutput - produceAccuracy..targetOutput + produceAccuracy) {
                     val newTarget = getRandomizeTarget(target)
-                    taskScheduler.addTask(TargetSetTask(this, heatUpTimeInTick, newTarget))
+                    lastTargetCommand = newTarget
+                    val engineStartTime = getEngineStartTime()
+                    taskScheduler.addTask(TargetSetTask(this, engineStartTime + constants.POWER_CONTROL_REACTION_TIME, newTarget))
                 }
             }
         }
     }
 
-    private fun getRandomizeTarget(target: Double): Double{
+    private fun getEngineStartTime(): Int {
+        val engineStartTasks = taskScheduler.getTaskByType(TaskType.ENGINE_START)
+        if(engineStartTasks.size > 1){
+            error("More then 1 EngineStartTasks")
+        } else {
+            val engineStartTask = engineStartTasks.firstOrNull()
+            return engineStartTask?.holdInTick ?: 0
+        }
+    }
+
+    fun getStartPower(): Double {
+        return ratedAcPower.times(minimumRunningPower)
+    }
+
+    private fun getRandomizeTarget(target: Double): Double {
         val newTarget = uniform(target - produceAccuracy, target + produceAccuracy).invoke()
         return if (newTarget > ratedAcPower)
             ratedAcPower
@@ -59,8 +116,11 @@ class Engine(
             newTarget
     }
 
-    private fun changeProduce(){
-        produce = targetOutput
+    private fun changeProduce() {
+        if(isStarted)
+            produce = targetOutput
+        else
+            targetOutput = 0.0
     }
 
 }

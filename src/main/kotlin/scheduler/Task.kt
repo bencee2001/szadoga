@@ -4,7 +4,8 @@ import units.AbstractUnit
 
 abstract class Task(
     val unit: AbstractUnit,
-    var holdInTick: Int
+    var holdInTick: Int,
+    val type: TaskType
 ) {
 
     fun tick(): Int{

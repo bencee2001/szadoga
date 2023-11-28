@@ -2,11 +2,11 @@ package scheduler
 
 import units.AbstractUnit
 
-class TargetSetTask(
+class EngineStartTask(
     unit: AbstractUnit,
     holdInTick: Int,
     private val newTarget: Double
-): Task(unit, holdInTick, TaskType.TARGET_SET) {
+): Task(unit, holdInTick, TaskType.ENGINE_START) {
 
     override fun process() {
         unit.targetOutput = newTarget

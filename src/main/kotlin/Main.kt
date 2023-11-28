@@ -55,8 +55,8 @@ suspend fun main(args: Array<String>){
                 2 to 2
             ),
             engines = mapOf(
-                1 to EngineData(1, 2, 100.0, 40.0, EngineType.TEST),
-                2 to EngineData(2, 2, 100.0, 45.0, EngineType.TEST)
+                1 to EngineData(1, 2, 100.0, 40.0, 10,EngineType.TEST),
+                2 to EngineData(2, 2, 100.0, 45.0, 10,EngineType.TEST)
             ),
             batteries = mapOf(
                 1 to BatteryData(1,1,100.0,BatteryType.TEST)

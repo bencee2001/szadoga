@@ -2,8 +2,7 @@ package constvalue
 
 import constvalue.battery.TestBattery
 import constvalue.engine.TestEngine
-import constvalue.inverter.HuaweiInverter
-import constvalue.inverter.TestInverter
+import constvalue.inverter.*
 import constvalue.loadbank.TestLoadbank
 import model.types.*
 import units.UnitType
@@ -12,6 +11,10 @@ object ConstByType {
     private val map = mapOf<Pair<UnitType, UnitSubType>, ConstValues>(
         Pair(UnitType.INVERTER,InverterType.HUAWEI) to HuaweiInverter,
         Pair(UnitType.INVERTER,InverterType.TEST) to TestInverter,
+        Pair(UnitType.INVERTER,InverterType.FRONIUS) to FroniusInverter,
+        Pair(UnitType.INVERTER,InverterType.KACO) to KacoInverter,
+        Pair(UnitType.INVERTER,InverterType.SMA_DATA_MANAGER) to SMAManagerInverter,
+
 
         Pair(UnitType.ENGINE,EngineType.TEST) to TestEngine,
 

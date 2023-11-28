@@ -3,6 +3,8 @@ package units
 import constvalue.ConstValues
 import org.kalasim.Component
 import scheduler.TaskScheduler
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 
 class Loadbank(
@@ -13,7 +15,15 @@ class Loadbank(
     constants: ConstValues,
     startTargetOutput: Double = 0.0,
     hasError: Boolean
-): AbstractUnit(loadbankId, type = UnitType.LOADBANK, ratedAcPower, constants, TaskScheduler(), startTargetOutput, hasError)  {
+): AbstractUnit(
+    id = loadbankId,
+    type = UnitType.LOADBANK,
+    ratedAcPower = ratedAcPower,
+    constants = constants,
+    taskScheduler = TaskScheduler(),
+    targetOutput = startTargetOutput,
+    hasError = hasError,
+    lastReadPower = 0.0)  {
 
     private val defaultTemp : Double = 10.0
     private val startTemp :Double = 20.0
@@ -23,22 +33,27 @@ class Loadbank(
     private val tempDownChangePerTick: Double = constants.DOWN_POWER_CONTROL_PER_TICK.div(changeValue)
 
     override fun repeatedProcess() = sequence<Component> {
-        hold(1)
+        hold(1.minutes)
         changeTemperature()
         println("Loadbank $id: ${calculateConsumeFromTemp(temp)}, $temp, $tempTarget, $targetOutput, $now")
     }
 
-    override fun read(): UnitPower {
-        val consumedPower = if(temp < startTemp ||targetOutput == 0.0){
+    override fun readNewValue(): UnitPower {
+        val consumedPower = if(temp < startTemp || targetOutput == 0.0){
             0.0
         }else{
             calculateConsumeFromTemp(temp)
         }
-         return UnitPower(id, consumedPower, now, UnitPowerMessage.CONSUME)
+        lastReadTime = now
+        lastReadPower = consumedPower
+        return UnitPower(id, consumedPower, now, UnitPowerMessage.CONSUME)
+    }
+
+    override fun readOldValue(): UnitPower {
+        return UnitPower(id, lastReadPower, lastReadTime, UnitPowerMessage.CONSUME)
     }
 
     override fun command(target: Double) {
-        println("Command: $target")
         setTargets(target)
     }
 
@@ -47,13 +62,16 @@ class Loadbank(
         if(target != 0.0) {
             if (target > ratedAcPower) {
                 targetOutput = ratedAcPower
+                lastTargetCommand = ratedAcPower
                 tempTarget = maxTemp
             } else {
                 targetOutput = target
+                lastTargetCommand = target
                 tempTarget = calcTemp
             }
         }else{
             targetOutput = 0.0
+            lastTargetCommand = 0.0
             tempTarget = 0.0
         }
     }

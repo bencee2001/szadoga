@@ -1,11 +1,10 @@
 package event
 
-import kotlinx.datetime.Instant
 import org.kalasim.Event
 import org.kalasim.TickTime
 import units.UnitType
 
-class UnitReadEvent(
+class ProducerReadEvent(
     val unitId: Int,
     val unitType: UnitType,
     val minPower: Int,

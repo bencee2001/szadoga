@@ -10,6 +10,10 @@ class TaskScheduler(
         taskList.add(task)
     }
 
+    fun removeTask(task: Task){
+        taskList.remove(task)
+    }
+
     fun addAllTask(vararg tasks: Task){
         tasks.forEach {
             taskList.add(it)
@@ -23,6 +27,10 @@ class TaskScheduler(
             if(task.tick() <= 0)
                 iterator.remove()
         }
+    }
+
+    fun getTaskByType(taskType: TaskType): List<Task>{
+        return taskList.filter { it.type == taskType }
     }
 
 
