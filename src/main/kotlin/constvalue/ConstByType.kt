@@ -1,6 +1,7 @@
 package constvalue
 
 import constvalue.battery.TestBattery
+import constvalue.engine.JenbacherEngine
 import constvalue.engine.TestEngine
 import constvalue.inverter.*
 import constvalue.loadbank.TestLoadbank
@@ -17,6 +18,7 @@ object ConstByType {
 
 
         Pair(UnitType.ENGINE,EngineType.TEST) to TestEngine,
+        Pair(UnitType.ENGINE,EngineType.JENBACHER) to JenbacherEngine,
 
         Pair(UnitType.LOADBANK,LoadbankType.TEST) to TestLoadbank,
 

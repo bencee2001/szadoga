@@ -35,9 +35,10 @@ class Inverter(
 
     init {
         lastReadPower = produce
-        val timeAccuracy = constants.POWER_CONTROL_REACTION_TIME * constants.TIME_ACCURACY + 0.1
+        val timeAccuracy = constants.TIME_ACCURACY + 0.1
+        val lowerBoundControl = constants.POWER_CONTROL_REACTION_TIME - timeAccuracy
         randomControlTime = uniform(
-            constants.POWER_CONTROL_REACTION_TIME - timeAccuracy,
+            if(lowerBoundControl >= 0) lowerBoundControl else 0.0,
             constants.POWER_CONTROL_REACTION_TIME + timeAccuracy
         )
         produceAccuracy = ratedAcPower * constants.PRODUCE_ACCURACY + 0.1
@@ -113,21 +114,6 @@ class Inverter(
                 0.0
             else
                 newProsume
-        }
-    }
-
-    private fun readingWithChecks(): UnitPower {
-        return if (!hasError) {
-            if (now.minus(lastReadTime) > constants.READ_FREQUENCY) {
-                lastReadTime = now
-                lastReadPower = produce
-                produce
-                UnitPower(id, produce, now, UnitPowerMessage.PRODUCE)
-            } else {
-                UnitPower(id, lastReadPower, lastReadTime, UnitPowerMessage.PRODUCE)
-            }
-        } else {
-            UnitPower(id, 0.0, lastReadTime, UnitPowerMessage.ERROR)
         }
     }
 

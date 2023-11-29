@@ -17,9 +17,16 @@ class RouterLogic {
             val targetDiff = targetVal - currentProsume.power
             targetVal += getNewTargetValByBattery(park)
             val targetByUnitId = mutableMapOf<UnitType, Map<Int, Double>>()
-            targetByUnitId[UnitType.INVERTER] = getInverterTargets(park, targetVal)
+
+            val inverterSum = park.unitList.filter { it.type == UnitType.INVERTER }.sumOf { it.ratedAcPower }
+            val engineSum = park.unitList.filter { it.type == UnitType.ENGINE }.sumOf { it.ratedAcPower }
+            val sum = inverterSum + engineSum
+            val targetValInverter = targetVal.div(sum).times(inverterSum)
+            val targetValEngine = targetVal.div(sum).times(engineSum)
+
+            targetByUnitId[UnitType.INVERTER] = getInverterTargets(park, targetValInverter)
             targetByUnitId[UnitType.LOADBANK] = getLoadbankTargets(park, targetDiff.times(-1))
-            targetByUnitId[UnitType.ENGINE] = getEngineTargets(park, targetVal)
+            targetByUnitId[UnitType.ENGINE] = getEngineTargets(park, targetValEngine)
             targetByUnitId[UnitType.BATTERY] = getBatteryTargets(park, targetDiff)
             return targetByUnitId
         }

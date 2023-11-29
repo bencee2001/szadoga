@@ -3,6 +3,7 @@ package units
 import constvalue.ConstValues
 import event.EngineReadEvent
 import event.ProducerReadEvent
+import org.apache.commons.math3.distribution.UniformRealDistribution
 import org.kalasim.invoke
 import org.kalasim.uniform
 import scheduler.EngineStartTask
@@ -33,7 +34,17 @@ class Engine(
     lastReadPower = produce
 ) {
 
+    private val randomControlTime: UniformRealDistribution
     private val produceAccuracy: Double = ratedAcPower * constants.PRODUCE_ACCURACY
+
+    init{
+        val timeAccuracy = constants.TIME_ACCURACY + 0.1
+        val lowerBoundControl = constants.POWER_CONTROL_REACTION_TIME - timeAccuracy
+        randomControlTime = uniform(
+            if(lowerBoundControl >= 0) lowerBoundControl else 0.0,
+            constants.POWER_CONTROL_REACTION_TIME + timeAccuracy
+        )
+    }
 
     override fun repeatedProcess() = sequence{
         hold(1.minutes)
@@ -76,7 +87,7 @@ class Engine(
         if(target == 0.0 || target < minimumRunningPower){
             isStarted = false
             lastTargetCommand = 0.0
-            taskScheduler.addTask(TargetSetTask(this, constants.POWER_CONTROL_REACTION_TIME, 0.0))
+            taskScheduler.addTask(TargetSetTask(this, randomControlTime.invoke().toInt(), 0.0))
             val engineStartTask = taskScheduler.getTaskByType(TaskType.ENGINE_START).firstOrNull()
             engineStartTask?.let { taskScheduler.removeTask(it) }
         }else{
@@ -90,7 +101,7 @@ class Engine(
                     val newTarget = getRandomizeTarget(target)
                     lastTargetCommand = newTarget
                     val engineStartTime = getEngineStartTime()
-                    taskScheduler.addTask(TargetSetTask(this, engineStartTime + constants.POWER_CONTROL_REACTION_TIME, newTarget))
+                    taskScheduler.addTask(TargetSetTask(this, engineStartTime + randomControlTime.invoke().toInt(), newTarget))
                 }
             }
         }

@@ -40,28 +40,15 @@ suspend fun main(args: Array<String>){
 
         val simDa = SimulationData(
             powerPlants = mapOf(
-                1 to PowerPlantData(1, "Hello", 100.0),
-                2 to PowerPlantData(2, "Bello", 200.0)
+                4 to PowerPlantData(4, "Test84", 22_000.0),
             ),
             inverters = mapOf(
-                1 to InverterData(1, 1, 20.0, true, InverterType.HUAWEI),
-                2 to InverterData(2, 1, 30.0, true, InverterType.TEST),
-                3 to InverterData(3, 1, 10.0, true, InverterType.HUAWEI),
-                4 to InverterData(4, 1, 25.0, true, InverterType.HUAWEI)
-            ),
-            loadbanks = mapOf(
-                1 to LoadbankData(1, 1, 20, 2, LoadbankType.TEST)
-            ),
-            powerPlantIdByProsumerId = mapOf(
-                1 to 1,
-                2 to 2
+                4 to InverterData(4, 4, 2_000.0, true, InverterType.FRONIUS),
+                5 to InverterData(5, 4, 2_000.0, true, InverterType.FRONIUS),
             ),
             engines = mapOf(
-                1 to EngineData(1, 2, 100.0, 40.0, 10,EngineType.TEST),
-                2 to EngineData(2, 2, 100.0, 45.0, 10,EngineType.TEST)
-            ),
-            batteries = mapOf(
-                1 to BatteryData(1,1,100.0,BatteryType.TEST)
+                6 to EngineData(6, 4, 10_000.0,0.5,12, EngineType.TEST),
+                7 to EngineData(7, 4, 8_000.0,0.5,12, EngineType.TEST),
             )
         )
 
@@ -78,9 +65,9 @@ suspend fun main(args: Array<String>){
             i += 2
             println(test.powerController.readParks())
             if(i < 30) {
-                test.powerController.commandParks(mapOf(1 to 50, 2 to 70))
+                test.powerController.commandParks(mapOf(4 to 22_000))
             }else{
-                test.powerController.commandParks(mapOf(1 to 20, 2 to 25))
+                test.powerController.commandParks(mapOf(4 to 10_000))
             }
             sleep(2_000)
         }
