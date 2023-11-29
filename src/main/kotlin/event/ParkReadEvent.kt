@@ -9,10 +9,4 @@ class ParkReadEvent(
     val producedPower: Double,
     val targetPower: Int,
     time: TickTime
-): Event(time){
-    val tick: Int
-
-    init {
-        tick = time.toString().toDouble().toInt()
-    }
-}
+): Event(time)

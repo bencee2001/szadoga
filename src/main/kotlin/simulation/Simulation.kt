@@ -8,6 +8,7 @@ import constvalue.ConstByType
 import constvalue.ConstValues
 import constvalue.CustomValues
 import event.*
+import event.eventDto.*
 import model.BatteryData
 import model.EngineData
 import model.InverterData
@@ -31,22 +32,22 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
 
     lateinit var powerController: PowerController
 
-    val inverterEventLog = mutableListOf<InverterReadEvent>()
-    val engineEventLog = mutableListOf<EngineReadEvent>()
-    val loadbankEventLog = mutableListOf<LoadbankReadEvent>()
-    val batteryEventLog = mutableListOf<BatteryReadEvent>()
-    val parkEventLog = mutableListOf<ParkReadEvent>()
+    val inverterEventLog = mutableListOf<InverterEventDto>()
+    val engineEventLog = mutableListOf<EngineEventDto>()
+    val loadbankEventLog = mutableListOf<LoadbankEventDto>()
+    val batteryEventLog = mutableListOf<BatteryEventDto>()
+    val parkEventLog = mutableListOf<ParkEventDto>()
 
     init {
         this.apply {
             if (inRealTime) ClockSync(tickDuration = 1.seconds)
             if (LogFlags.UNIT_READ_LOG) {
-                addEventListener { it: InverterReadEvent -> inverterEventLog.add(it) }
-                addEventListener { it: EngineReadEvent -> engineEventLog.add(it) }
-                addEventListener { it: LoadbankReadEvent -> loadbankEventLog.add(it) }
-                addEventListener { it: BatteryReadEvent -> batteryEventLog.add(it) }
+                addEventListener { it: InverterReadEvent -> inverterEventLog.add(InverterEventDto(it)) }
+                addEventListener { it: EngineReadEvent -> engineEventLog.add(EngineEventDto(it)) }
+                addEventListener { it: LoadbankReadEvent -> loadbankEventLog.add(LoadbankEventDto(it)) }
+                addEventListener { it: BatteryReadEvent -> batteryEventLog.add(BatteryEventDto(it)) }
             }
-            if (LogFlags.PARK_READ_LOG) addEventListener { it: ParkReadEvent -> parkEventLog.add(it) }
+            if (LogFlags.PARK_READ_LOG) addEventListener { it: ParkReadEvent -> parkEventLog.add(ParkEventDto(it)) }
             powerController = setPowerController(simData)
         }
     }

@@ -44,7 +44,7 @@ class Battery (
                     maxCharge = ratedAcPower.toInt(),
                     charge = charge.toInt(),
                     prosume = getPowerForEvent(power),
-                    currentTarget = targetOutput.toInt(),
+                    currentTarget = lastTargetCommand.toInt(),
                     time = now
                 )
             )
@@ -64,9 +64,9 @@ class Battery (
         val unitPower = if(targetOutput == 0.0)
             UnitPower(id, 0.0, now, UnitPowerMessage.PRODUCE)
         else if(targetOutput < 0)
-            UnitPower(id, constants.UP_POWER_CONTROL_PER_TICK, now, UnitPowerMessage.CONSUME)
+            UnitPower(id, constants.DOWN_POWER_CONTROL_PER_TICK, now, UnitPowerMessage.CONSUME)
         else
-            UnitPower(id, constants.DOWN_POWER_CONTROL_PER_TICK, now, UnitPowerMessage.PRODUCE)
+            UnitPower(id, constants.UP_POWER_CONTROL_PER_TICK, now, UnitPowerMessage.PRODUCE)
         lastReadTime = now
         lastReadPower = unitPower.power
         return unitPower

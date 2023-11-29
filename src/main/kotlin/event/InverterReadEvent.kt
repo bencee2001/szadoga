@@ -12,11 +12,4 @@ class InverterReadEvent(
     val power: Int,
     val currentTarget: Int,
     time: TickTime
-): Event(time){
-
-    val tick: Int
-
-    init {
-        tick = time.toString().toDouble().toInt()
-    }
-}
+): Event(time)

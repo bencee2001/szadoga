@@ -14,6 +14,4 @@ class LoadbankReadEvent(
     val currentTarget: Int,
     val temperatureTarget: Int,
     time: TickTime
-): Event(time){
-
-}
+): Event(time)
