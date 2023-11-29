@@ -7,10 +7,7 @@ import configdsl.models.DslUnit
 import constvalue.ConstByType
 import constvalue.ConstValues
 import constvalue.CustomValues
-import event.BatteryReadEvent
-import event.LoadbankReadEvent
-import event.ParkReadEvent
-import event.ProducerReadEvent
+import event.*
 import model.BatteryData
 import model.EngineData
 import model.InverterData
@@ -34,7 +31,8 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
 
     lateinit var powerController: PowerController
 
-    val unitEventLog = mutableListOf<ProducerReadEvent>()
+    val inverterEventLog = mutableListOf<InverterReadEvent>()
+    val engineEventLog = mutableListOf<EngineReadEvent>()
     val loadbankEventLog = mutableListOf<LoadbankReadEvent>()
     val batteryEventLog = mutableListOf<BatteryReadEvent>()
     val parkEventLog = mutableListOf<ParkReadEvent>()
@@ -43,7 +41,8 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
         this.apply {
             if (inRealTime) ClockSync(tickDuration = 1.seconds)
             if (LogFlags.UNIT_READ_LOG) {
-                addEventListener { it: ProducerReadEvent -> unitEventLog.add(it) }
+                addEventListener { it: InverterReadEvent -> inverterEventLog.add(it) }
+                addEventListener { it: EngineReadEvent -> engineEventLog.add(it) }
                 addEventListener { it: LoadbankReadEvent -> loadbankEventLog.add(it) }
                 addEventListener { it: BatteryReadEvent -> batteryEventLog.add(it) }
             }
@@ -57,8 +56,15 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
         run(time)
         if (LogFlags.UNIT_READ_LOG) {
             val name = unitLogFileName ?: "unitLog${fileNameDateFormater.print(startDate)}"
-            unitEventLog.toDataFrame()
-                .writeCSV("${PATH}\\$name.csv")
+
+            val inverterName = name + "INV"
+            if (inverterEventLog.size != 0)
+                inverterEventLog.toDataFrame()
+                    .writeCSV("${PATH}\\$inverterName.csv")
+            val engineName = name + "ENG"
+            if (engineEventLog.size != 0)
+                engineEventLog.toDataFrame()
+                    .writeCSV("${PATH}\\$engineName.csv")
             val loadbankName = name + "LD"
             if (loadbankEventLog.size != 0)
                 loadbankEventLog.toDataFrame()

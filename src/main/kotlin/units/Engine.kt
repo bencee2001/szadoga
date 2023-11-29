@@ -1,6 +1,7 @@
 package units
 
 import constvalue.ConstValues
+import event.EngineReadEvent
 import event.ProducerReadEvent
 import org.kalasim.invoke
 import org.kalasim.uniform
@@ -45,7 +46,7 @@ class Engine(
         val power = super.read(loggingEnabled)
         eventLogging(loggingEnabled) {
             log(
-                ProducerReadEvent(
+                EngineReadEvent(
                     id,
                     type,
                     0,

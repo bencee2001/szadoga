@@ -2,6 +2,7 @@ package units
 
 import LogFlags
 import constvalue.ConstValues
+import event.InverterReadEvent
 import event.ProducerReadEvent
 import org.apache.commons.math3.distribution.UniformRealDistribution
 import org.kalasim.*
@@ -54,7 +55,7 @@ class Inverter(
         val power = super.read(loggingEnabled)
         eventLogging(loggingEnabled) {
             log(
-                ProducerReadEvent(
+                InverterReadEvent(
                     id,
                     type,
                     0,
