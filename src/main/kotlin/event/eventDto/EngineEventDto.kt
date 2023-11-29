@@ -2,6 +2,7 @@ package event.eventDto
 
 import event.EngineReadEvent
 import event.InverterReadEvent
+import units.UnitPowerMessage
 import units.UnitType
 
 class EngineEventDto(
@@ -11,6 +12,7 @@ class EngineEventDto(
     val maxPower: Int,
     val power: Int,
     val currentTarget: Int,
+    val unitPowerMessage: UnitPowerMessage,
     val time: Int
 ){
     constructor(event: EngineReadEvent): this(
@@ -20,6 +22,7 @@ class EngineEventDto(
         maxPower = event.maxPower,
         power = event.power,
         currentTarget = event.currentTarget,
+        unitPowerMessage = event.unitPowerMessage,
         time = event.time.value.toInt()
     )
 }

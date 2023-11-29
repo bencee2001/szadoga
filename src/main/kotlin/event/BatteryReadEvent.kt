@@ -14,6 +14,7 @@ class BatteryReadEvent(
     val maxCharge: Int,
     val charge: Int,
     val prosume: Int,
+    val unitPowerMessage: UnitPowerMessage,
     val currentTarget: Int,
     time: TickTime
 ): Event(time)

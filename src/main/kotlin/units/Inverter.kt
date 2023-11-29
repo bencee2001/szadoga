@@ -62,6 +62,7 @@ class Inverter(
                     ratedAcPower.toInt(),
                     power.power.toInt(),
                     lastTargetCommand.toInt(),
+                    power.unitPowerMessage,
                     now
                 )
             )

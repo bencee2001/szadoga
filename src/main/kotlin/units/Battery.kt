@@ -44,6 +44,7 @@ class Battery (
                     maxCharge = ratedAcPower.toInt(),
                     charge = charge.toInt(),
                     prosume = getPowerForEvent(power),
+                    unitPowerMessage = power.unitPowerMessage,
                     currentTarget = lastTargetCommand.toInt(),
                     time = now
                 )

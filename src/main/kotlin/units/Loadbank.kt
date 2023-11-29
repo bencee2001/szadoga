@@ -52,6 +52,7 @@ class Loadbank(
                 minConsume = 0,
                 maxConsume = ratedAcPower.toInt(),
                 consume = power.power.toInt(),
+                unitPowerMessage = power.unitPowerMessage,
                 temperature = temp.toInt(),
                 currentTarget = targetOutput.toInt(),
                 temperatureTarget = tempTarget.toInt(),

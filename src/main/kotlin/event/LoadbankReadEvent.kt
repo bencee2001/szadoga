@@ -2,6 +2,7 @@ package event
 
 import org.kalasim.Event
 import org.kalasim.TickTime
+import units.UnitPowerMessage
 import units.UnitType
 
 class LoadbankReadEvent(
@@ -10,6 +11,7 @@ class LoadbankReadEvent(
     val minConsume: Int,
     val maxConsume: Int,
     val consume: Int,
+    val unitPowerMessage: UnitPowerMessage,
     val temperature: Int,
     val currentTarget: Int,
     val temperatureTarget: Int,

@@ -8,7 +8,7 @@ class EndErrorTask(
 ): Task(unit, holdInTick, TaskType.END_ERROR) {
 
     override fun process() {
-        unit.hasError = true
+        unit.hasError = false
     }
 
 }

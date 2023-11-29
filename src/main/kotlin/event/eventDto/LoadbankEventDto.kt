@@ -1,6 +1,7 @@
 package event.eventDto
 
 import event.LoadbankReadEvent
+import units.UnitPowerMessage
 import units.UnitType
 
 class LoadbankEventDto(
@@ -9,6 +10,7 @@ class LoadbankEventDto(
     val minConsume: Int,
     val maxConsume: Int,
     val consume: Int,
+    val unitPowerMessage: UnitPowerMessage,
     val temperature: Int,
     val currentTarget: Int,
     val temperatureTarget: Int,
@@ -21,6 +23,7 @@ class LoadbankEventDto(
         minConsume = event.minConsume,
         maxConsume = event.maxConsume,
         consume = event.consume,
+        unitPowerMessage = event.unitPowerMessage,
         temperature = event.temperature,
         temperatureTarget = event.temperatureTarget,
         currentTarget = event.currentTarget,

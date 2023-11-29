@@ -2,6 +2,7 @@ package event.eventDto
 
 import event.InverterReadEvent
 import org.checkerframework.checker.units.qual.Current
+import units.UnitPowerMessage
 import units.UnitType
 
 class InverterEventDto(
@@ -11,6 +12,7 @@ class InverterEventDto(
     val maxPower: Int,
     val power: Int,
     val currentTarget: Int,
+    val unitPowerMessage: UnitPowerMessage,
     val time: Int
 ){
     constructor(event: InverterReadEvent): this(
@@ -20,6 +22,7 @@ class InverterEventDto(
         maxPower = event.maxPower,
         power = event.power,
         currentTarget = event.currentTarget,
+        unitPowerMessage = event.unitPowerMessage,
         time = event.time.value.toInt()
     )
 }

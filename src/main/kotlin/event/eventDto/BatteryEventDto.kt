@@ -1,6 +1,7 @@
 package event.eventDto
 
 import event.BatteryReadEvent
+import units.UnitPowerMessage
 import units.UnitType
 
 class BatteryEventDto(
@@ -12,6 +13,7 @@ class BatteryEventDto(
     val maxCharge: Int,
     val charge: Int,
     val prosume: Int,
+    val unitPowerMessage: UnitPowerMessage,
     val currentTarget: Int,
     val time: Int
 ){
@@ -24,6 +26,7 @@ class BatteryEventDto(
         maxCharge = event.maxCharge,
         charge = event.charge,
         prosume = event.prosume,
+        unitPowerMessage = event.unitPowerMessage,
         currentTarget = event.currentTarget,
         time = event.time.value.toInt()
     )

@@ -52,6 +52,7 @@ class Engine(
                     0,
                     ratedAcPower.toInt(),
                     power.power.toInt(),
+                    power.unitPowerMessage,
                     lastTargetCommand.toInt(),
                     now
                 )
