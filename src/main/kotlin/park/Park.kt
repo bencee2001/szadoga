@@ -38,7 +38,7 @@ class Park(
     }
 
     suspend fun getSumConsume(): ParkPower{
-        val powers = unitList.map { coroutineScope { it.read() } }
+        val powers = unitList.map { coroutineScope { it.read(LogFlags.UNIT_READ_LOG) } }
         val time = powers.first().tickTime
         val parkPower = powers.sumOf { if (it.unitPowerMessage == UnitPowerMessage.PRODUCE)
                 it.power
@@ -50,7 +50,7 @@ class Park(
     }
 
     suspend fun getSumProduce(): ParkPower{
-        val powers = unitList.map { coroutineScope { it.read() } }
+        val powers = unitList.map { coroutineScope { it.read(false) } }
         val time = powers.first().tickTime
         val parkPower = powers.filter { it.unitPowerMessage == UnitPowerMessage.PRODUCE }.sumOf { it.power }
         return ParkPower(parkId, maximumOutput, parkPower, time)
@@ -63,12 +63,12 @@ class Park(
     fun getNotFullBatteries(): List<Battery>{
         val batteries = unitList.filter { it.type == UnitType.BATTERY }
         val realBatteries = batteries.map { it as Battery }
-        return realBatteries.filter { !it.isFull() }
+        return realBatteries.filter { !it.isEmpty() }
     }
 
     fun isBatteriesFull(): Boolean{
         val batteries = unitList.filter { it.type == UnitType.BATTERY }
         val realBatteries = batteries.map { it as Battery }
-        return realBatteries.all { it.isFull() }
+        return realBatteries.all { it.isEmpty() }
     }
 }

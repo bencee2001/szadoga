@@ -47,11 +47,12 @@ class Inverter(
         hold(1.minutes)
         taskScheduler.checkTasks()
         changeProduce()
+        println("Inverter $id: $produce, $targetOutput, $now")
     }
 
-    override fun read(): UnitPower {
-        val power = super.read()
-        eventLogging(LogFlags.UNIT_READ_LOG) {
+    override fun read(loggingEnabled: Boolean): UnitPower {
+        val power = super.read(loggingEnabled)
+        eventLogging(loggingEnabled) {
             log(
                 ProducerReadEvent(
                     id,

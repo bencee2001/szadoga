@@ -15,7 +15,7 @@ import units.UnitType
 import java.lang.Thread.sleep
 
 suspend fun main(args: Array<String>){
-    coroutineScope {
+    /*coroutineScope {
 
         val testConf = config {
             addDefaultProduceConfig(UnitType.INVERTER, 0.5)
@@ -35,6 +35,8 @@ suspend fun main(args: Array<String>){
                 }
             }
         }
+
+        LogFlags.UNIT_READ_LOG = true
 
         val simDa = SimulationData(
             powerPlants = mapOf(
@@ -82,5 +84,5 @@ suspend fun main(args: Array<String>){
             }
             sleep(2_000)
         }
-    }
+    }*/
 }

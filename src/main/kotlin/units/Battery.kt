@@ -1,11 +1,12 @@
 package units
 
 import constvalue.ConstValues
+import event.BatteryReadEvent
 import org.kalasim.Component
 import scheduler.TargetSetTask
 import scheduler.TaskScheduler
+import util.eventLogging
 import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.seconds
 
 class Battery (
     batteryId: Int,
@@ -28,7 +29,35 @@ class Battery (
         hold(1.minutes)
         taskScheduler.checkTasks()
         changeProsume()
-        println("Battery $id: $charge, $now")
+        println("Battery $id: $charge, $targetOutput, $now")
+    }
+
+    override fun read(loggingEnabled: Boolean): UnitPower {
+        val power = super.read(loggingEnabled)
+        eventLogging(loggingEnabled){
+            log(
+                BatteryReadEvent(
+                    id = id,
+                    minPower = -constants.DOWN_POWER_CONTROL_PER_TICK.toInt(),
+                    maxPower = constants.UP_POWER_CONTROL_PER_TICK.toInt(),
+                    minCharge = 0,
+                    maxCharge = ratedAcPower.toInt(),
+                    charge = charge.toInt(),
+                    prosume = getPowerForEvent(power),
+                    currentTarget = targetOutput.toInt(),
+                    time = now
+                )
+            )
+        }
+        return power
+    }
+
+    private fun getPowerForEvent(power: UnitPower): Int{
+        return when (power.unitPowerMessage) {
+            UnitPowerMessage.PRODUCE -> power.power.toInt()
+            UnitPowerMessage.CONSUME -> -power.power.toInt()
+            else -> 0
+        }
     }
 
     override fun readNewValue(): UnitPower {
@@ -67,7 +96,11 @@ class Battery (
         }
     }
 
+    fun isEmpty(): Boolean {
+        return charge < ratedAcPower * 0.1
+    }
+
     fun isFull(): Boolean {
-        return charge > ratedAcPower * 0.8
+        return charge > ratedAcPower * 0.85
     }
 }

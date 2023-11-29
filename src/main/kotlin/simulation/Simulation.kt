@@ -7,6 +7,8 @@ import configdsl.models.DslUnit
 import constvalue.ConstByType
 import constvalue.ConstValues
 import constvalue.CustomValues
+import event.BatteryReadEvent
+import event.LoadbankReadEvent
 import event.ParkReadEvent
 import event.ProducerReadEvent
 import model.BatteryData
@@ -27,18 +29,25 @@ import util.PATH
 import util.fileNameDateFormater
 import kotlin.time.Duration.Companion.seconds
 
-class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, private val config: ConfigDSL? = null): Environment(randomSeed = randomSeed) {
+class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, private val config: ConfigDSL? = null) :
+    Environment(randomSeed = randomSeed) {
 
     lateinit var powerController: PowerController
 
     val unitEventLog = mutableListOf<ProducerReadEvent>()
+    val loadbankEventLog = mutableListOf<LoadbankReadEvent>()
+    val batteryEventLog = mutableListOf<BatteryReadEvent>()
     val parkEventLog = mutableListOf<ParkReadEvent>()
 
     init {
         this.apply {
-            if(inRealTime) ClockSync(tickDuration = 1.seconds)
-            if(LogFlags.UNIT_READ_LOG) addEventListener{ it: ProducerReadEvent -> unitEventLog.add(it) }
-            if(LogFlags.PARK_READ_LOG) addEventListener{ it: ParkReadEvent -> parkEventLog.add(it) }
+            if (inRealTime) ClockSync(tickDuration = 1.seconds)
+            if (LogFlags.UNIT_READ_LOG) {
+                addEventListener { it: ProducerReadEvent -> unitEventLog.add(it) }
+                addEventListener { it: LoadbankReadEvent -> loadbankEventLog.add(it) }
+                addEventListener { it: BatteryReadEvent -> batteryEventLog.add(it) }
+            }
+            if (LogFlags.PARK_READ_LOG) addEventListener { it: ParkReadEvent -> parkEventLog.add(it) }
             powerController = setPowerController(simData)
         }
     }
@@ -47,25 +56,35 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
         val startDate = DateTime()
         run(time)
         if (LogFlags.UNIT_READ_LOG) {
-            val name = unitLogFileName?.let { "$it.csv" } ?: "unitLog${fileNameDateFormater.print(startDate)}.csv"
-            unitEventLog.toDataFrame().drop(2)
-                .writeCSV("${PATH}\\$name")
+            val name = unitLogFileName ?: "unitLog${fileNameDateFormater.print(startDate)}"
+            unitEventLog.toDataFrame()
+                .writeCSV("${PATH}\\$name.csv")
+            val loadbankName = name + "LD"
+            if (loadbankEventLog.size != 0)
+                loadbankEventLog.toDataFrame()
+                    .writeCSV("${PATH}\\$loadbankName.csv")
+            val batteryName = name + "BT"
+            if (batteryEventLog.size != 0)
+                batteryEventLog.toDataFrame()
+                    .writeCSV("${PATH}\\$batteryName.csv")
+
 
         }
         if (LogFlags.PARK_READ_LOG) {
-            val name = parkLogFileName?.let { "$it.csv" } ?: "parkLog${fileNameDateFormater.print(startDate)}.csv"
+            val name = parkLogFileName ?: "parkLog${fileNameDateFormater.print(startDate)}"
             parkEventLog.toDataFrame()
-                .writeCSV("${PATH}\\$name")
+                .writeCSV("${PATH}\\$name.csv")
         }
     }
 
-    private fun setPowerController(simData: SimulationData): PowerController{
+    private fun setPowerController(simData: SimulationData): PowerController {
         val parkList = mutableListOf<Park>()
         val powerPlantIds = simData.powerPlants.keys
         val inverterIdsByPowerPlantId = getInverterIdsByPowerPlantId(simData)
         val loadbankIdsByPowerPlantId = getLoadbankIdsByPowerPlantId(simData)
         val engineIdsByPowerPlantId = getEngineIdsByPowerPlant(simData)
         val batteryIdsByPowerPlantId = getBatteryIdsByPowerPlant(simData)
+        println(batteryIdsByPowerPlantId.size)
 
         powerPlantIds.forEach { powerPlantId ->
             val inverters = simData.inverters.values.filter { inv ->
@@ -80,10 +99,13 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
             val batteries = simData.batteries.values.filter { bty ->
                 bty.batteryId in (batteryIdsByPowerPlantId[powerPlantId] ?: emptyList())
             }
+            println(simData.batteries)
+            println(batteryIdsByPowerPlantId)
             val inverterUnits = toInverterUnits(inverters)
             val loadbankUnits = toLoadbankUnits(loadbanks)
             val engineUnits = toEngineUnits(engines)
             val batteryUnits: List<Battery> = toBatteryUnits(batteries)
+            println(batteryUnits.size)
             val units = mutableListOf<AbstractUnit>()
             units.addAll(inverterUnits)
             units.addAll(loadbankUnits)
@@ -101,18 +123,20 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
         return PowerController(parkList)
     }
 
-    private fun getInverterIdsByPowerPlantId(simData: SimulationData) = simData.inverters.map { it.value }.groupBy { it.powerPlantId }
-        .mapValues { inv -> inv.value.map { it.inverterId } }
+    private fun getInverterIdsByPowerPlantId(simData: SimulationData) =
+        simData.inverters.map { it.value }.groupBy { it.powerPlantId }
+            .mapValues { inv -> inv.value.map { it.inverterId } }
 
-    private fun getLoadbankIdsByPowerPlantId(simData: SimulationData) = simData.loadbanks.map { it.value }.groupBy { it.powerPlantId }
-        .mapValues { ld -> ld.value.map { it.loadbankId }  }
+    private fun getLoadbankIdsByPowerPlantId(simData: SimulationData) =
+        simData.loadbanks.map { it.value }.groupBy { it.powerPlantId }
+            .mapValues { ld -> ld.value.map { it.loadbankId } }
 
 
     private fun getEngineIdsByPowerPlant(simData: SimulationData) =
         simData.engines.map { it.value }.groupBy { it.powerPlantId }.mapValues { eng -> eng.value.map { it.engineId } }
 
     private fun getBatteryIdsByPowerPlant(simData: SimulationData) =
-        simData.batteries.values.groupBy { it.batteryId }.mapValues { bty -> bty.value.map { it.batteryId } }
+        simData.batteries.values.groupBy { it.powerPlantId }.mapValues { bty -> bty.value.map { it.batteryId } }
 
     private fun toInverterUnits(inverters: List<InverterData>): List<Inverter> {
         return inverters.map { inv ->
@@ -135,8 +159,8 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
     }
 
     private fun toEngineUnits(engines: List<EngineData>): List<Engine> {
-        return engines.map{ eng ->
-            val defVal = getConstValues( UnitType.ENGINE ,eng.engineType)
+        return engines.map { eng ->
+            val defVal = getConstValues(UnitType.ENGINE, eng.engineType)
             val (unitDefValues, unitTasks) = getDefValues(UnitType.ENGINE, eng.engineId)
             val engine = toEngineUnit(eng, defVal, unitDefValues)
             addTaskToUnit(unitTasks, engine)
@@ -146,7 +170,7 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
 
     private fun toBatteryUnits(batteries: List<BatteryData>): List<Battery> {
         return batteries.map { bty ->
-            val defVal = getConstValues( UnitType.BATTERY ,bty.batteryType)
+            val defVal = getConstValues(UnitType.BATTERY, bty.batteryType)
             val (unitDefValues, unitTasks) = getDefValues(UnitType.BATTERY, bty.batteryId)
             val battery = toBatteryUnit(bty, unitDefValues, defVal)
             addTaskToUnit(unitTasks, battery)
@@ -160,27 +184,30 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
         inv: InverterData,
         constants: ConstValues
     ) = Inverter(
-            inverterId = inv.inverterId,
-            ratedAcPower = inv.ratedAcPower,
-            target = unitDefValues?.targetOutput ?: getDefaultProducing(UnitType.INVERTER, inv.ratedAcPower) ?: 0.0,
-            produce = 0.0,
-            constants = constants,
-            hasError = unitDefValues?.hasError ?: false
-        )
+        inverterId = inv.inverterId,
+        ratedAcPower = inv.ratedAcPower,
+        target = unitDefValues?.targetOutput ?: getDefaultProducing(UnitType.INVERTER, inv.ratedAcPower) ?: 0.0,
+        produce = 0.0,
+        constants = constants,
+        hasError = unitDefValues?.hasError ?: false
+    )
 
     private fun toLoadbankUnit(
         unitDefValues: DslUnit?,
         ld: LoadbankData,
         defVal: ConstValues
     ) = Loadbank(
-            loadbankId = ld.loadbankId,
-            temp = 0.0,
-            tempTarget = 0.0,
-            ratedAcPower = ld.ratedAcPower.toDouble(),
-            constants = defVal,
-            startTargetOutput = unitDefValues?.targetOutput ?: getDefaultProducing(UnitType.LOADBANK, ld.ratedAcPower.toDouble()) ?: 0.0,
-            hasError = unitDefValues?.hasError ?: false
-        )
+        loadbankId = ld.loadbankId,
+        temp = 0.0,
+        tempTarget = 0.0,
+        ratedAcPower = ld.ratedAcPower.toDouble(),
+        constants = defVal,
+        startTargetOutput = unitDefValues?.targetOutput ?: getDefaultProducing(
+            UnitType.LOADBANK,
+            ld.ratedAcPower.toDouble()
+        ) ?: 0.0,
+        hasError = unitDefValues?.hasError ?: false
+    )
 
     private fun toEngineUnit(
         eng: EngineData,
@@ -212,20 +239,27 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
         hasError = unitDefValues?.hasError ?: false
     )
 
-    private fun getConstValues(unitType: UnitType, unitSubType: UnitSubType, ratedAcPower: Double? = null): ConstValues{ // TODO kivenni acPower-t
+    private fun getConstValues(
+        unitType: UnitType,
+        unitSubType: UnitSubType,
+        ratedAcPower: Double? = null
+    ): ConstValues { // TODO kivenni acPower-t
         val configConst = config?.typeConfig?.get(Pair(unitType, unitSubType))
         val constValues = ConstByType.get(Pair(unitType, unitSubType))
         return CustomValues(
-                UP_POWER_CONTROL_PER_TICK = ratedAcPower ?: configConst?.UP_POWER_CONTROL_PER_TICK ?: constValues.UP_POWER_CONTROL_PER_TICK,
-                DOWN_POWER_CONTROL_PER_TICK = ratedAcPower ?: configConst?.DOWN_POWER_CONTROL_PER_TICK ?: constValues.DOWN_POWER_CONTROL_PER_TICK,
-                READ_FREQUENCY = configConst?.READ_FREQUENCY ?: constValues.READ_FREQUENCY,
-                POWER_CONTROL_REACTION_TIME = configConst?.POWER_CONTROL_REACTION_TIME ?: constValues.POWER_CONTROL_REACTION_TIME,
-                TIME_ACCURACY = configConst?.TIME_ACCURACY ?: constValues.TIME_ACCURACY,
-                PRODUCE_ACCURACY = configConst?.PRODUCE_ACCURACY ?: constValues.PRODUCE_ACCURACY
-            )
+            UP_POWER_CONTROL_PER_TICK = ratedAcPower ?: configConst?.UP_POWER_CONTROL_PER_TICK
+            ?: constValues.UP_POWER_CONTROL_PER_TICK,
+            DOWN_POWER_CONTROL_PER_TICK = ratedAcPower ?: configConst?.DOWN_POWER_CONTROL_PER_TICK
+            ?: constValues.DOWN_POWER_CONTROL_PER_TICK,
+            READ_FREQUENCY = configConst?.READ_FREQUENCY ?: constValues.READ_FREQUENCY,
+            POWER_CONTROL_REACTION_TIME = configConst?.POWER_CONTROL_REACTION_TIME
+                ?: constValues.POWER_CONTROL_REACTION_TIME,
+            TIME_ACCURACY = configConst?.TIME_ACCURACY ?: constValues.TIME_ACCURACY,
+            PRODUCE_ACCURACY = configConst?.PRODUCE_ACCURACY ?: constValues.PRODUCE_ACCURACY
+        )
     }
 
-    private fun getDefaultProducing(unitType: UnitType, ratedAcPower: Double): Double?{
+    private fun getDefaultProducing(unitType: UnitType, ratedAcPower: Double): Double? {
         val defProd = config?.defaultProduceConfig?.get(unitType)
         return if (defProd == null)
             null

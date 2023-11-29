@@ -1,8 +1,11 @@
 package units
 
+import LogFlags
 import constvalue.ConstValues
+import event.LoadbankReadEvent
 import org.kalasim.Component
 import scheduler.TaskScheduler
+import util.eventLogging
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -36,6 +39,27 @@ class Loadbank(
         hold(1.minutes)
         changeTemperature()
         println("Loadbank $id: ${calculateConsumeFromTemp(temp)}, $temp, $tempTarget, $targetOutput, $now")
+    }
+
+    override fun read(loggingEnabled: Boolean): UnitPower {
+        val power = super.read(loggingEnabled)
+        println("Fasz")
+        eventLogging(LogFlags.UNIT_READ_LOG){
+            log(
+                LoadbankReadEvent(
+                id = id,
+                unitType = type,
+                minConsume = 0,
+                maxConsume = ratedAcPower.toInt(),
+                consume = power.power.toInt(),
+                temperature = temp.toInt(),
+                currentTarget = targetOutput.toInt(),
+                temperatureTarget = tempTarget.toInt(),
+                now
+                )
+            )
+        }
+        return power
     }
 
     override fun readNewValue(): UnitPower {

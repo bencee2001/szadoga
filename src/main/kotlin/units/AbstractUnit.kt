@@ -23,7 +23,7 @@ abstract class AbstractUnit(
     var lastTargetCommand: Double = 0.0
 ) : Component() {
 
-    open fun read(): UnitPower {
+    open fun read(loggingEnabled: Boolean): UnitPower {
         return readingWithChecks()
     }
 

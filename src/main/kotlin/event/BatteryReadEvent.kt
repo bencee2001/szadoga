@@ -2,6 +2,7 @@ package event
 
 import org.kalasim.Event
 import org.kalasim.TickTime
+import units.UnitPowerMessage
 import units.UnitType
 
 class BatteryReadEvent(
@@ -9,7 +10,10 @@ class BatteryReadEvent(
     val unitType: UnitType = UnitType.BATTERY,
     val minPower: Int,
     val maxPower: Int,
-    val power: Int,
+    val minCharge: Int,
+    val maxCharge: Int,
+    val charge: Int,
+    val prosume: Int,
     val currentTarget: Int,
     time: TickTime
 ): Event(time)

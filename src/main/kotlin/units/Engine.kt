@@ -41,9 +41,9 @@ class Engine(
         println("Engine $id: $produce, $lastTargetCommand, $now")
     }
 
-    override fun read(): UnitPower{
-        val power = super.read()
-        eventLogging(LogFlags.UNIT_READ_LOG) {
+    override fun read(loggingEnabled: Boolean): UnitPower{
+        val power = super.read(loggingEnabled)
+        eventLogging(loggingEnabled) {
             log(
                 ProducerReadEvent(
                     id,
@@ -74,7 +74,7 @@ class Engine(
         if(target == 0.0 || target < minimumRunningPower){
             isStarted = false
             lastTargetCommand = 0.0
-            targetOutput = 0.0
+            taskScheduler.addTask(TargetSetTask(this, constants.POWER_CONTROL_REACTION_TIME, 0.0))
             val engineStartTask = taskScheduler.getTaskByType(TaskType.ENGINE_START).firstOrNull()
             engineStartTask?.let { taskScheduler.removeTask(it) }
         }else{
@@ -117,10 +117,7 @@ class Engine(
     }
 
     private fun changeProduce() {
-        if(isStarted)
-            produce = targetOutput
-        else
-            targetOutput = 0.0
+        produce = targetOutput
     }
 
 }
