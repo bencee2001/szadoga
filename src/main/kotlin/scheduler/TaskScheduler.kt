@@ -1,8 +1,6 @@
 package scheduler
 
-class TaskScheduler(
-
-) {
+class TaskScheduler{
 
     private val taskList: MutableList<Task> = mutableListOf()
 
@@ -12,12 +10,6 @@ class TaskScheduler(
 
     fun removeTask(task: Task){
         taskList.remove(task)
-    }
-
-    fun addAllTask(vararg tasks: Task){
-        tasks.forEach {
-            taskList.add(it)
-        }
     }
 
     fun checkTasks(){
@@ -31,6 +23,22 @@ class TaskScheduler(
 
     fun getTaskByType(taskType: TaskType): List<Task>{
         return taskList.filter { it.type == taskType }
+    }
+
+    /**
+     * Delete every Task that are not Error or other that need to be added by config
+     */
+    fun emptyTaskList(){
+        taskList.filter { it.type !in configTasks }.forEach {
+            taskList.remove(it)
+        }
+    }
+
+    companion object{
+        val configTasks = listOf(
+            TaskType.START_ERROR,
+            TaskType.END_ERROR
+        )
     }
 
 

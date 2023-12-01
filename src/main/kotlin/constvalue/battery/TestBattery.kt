@@ -8,5 +8,5 @@ object TestBattery: ConstValues {
     override val READ_FREQUENCY: Int = 2
     override val POWER_CONTROL_REACTION_TIME: Int = 3
     override val TIME_ACCURACY: Double = 1.0
-    override val PRODUCE_ACCURACY: Double = 0.1
+    override val TARGET_ACCURACY: Double = 0.1
 }

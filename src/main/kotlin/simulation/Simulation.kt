@@ -1,6 +1,6 @@
 package simulation
 
-import LogFlags
+import util.LogFlags
 import configdsl.ConfigDSL
 import configdsl.models.DslTask
 import configdsl.models.DslUnit
@@ -14,31 +14,34 @@ import model.EngineData
 import model.InverterData
 import model.LoadbankData
 import model.types.UnitSubType
-import org.jetbrains.kotlinx.dataframe.api.drop
 import org.jetbrains.kotlinx.dataframe.api.toDataFrame
 import org.jetbrains.kotlinx.dataframe.io.writeCSV
 import org.joda.time.DateTime
 import org.kalasim.ClockSync
 import org.kalasim.Environment
+import org.kalasim.misc.AmbiguousDuration
 import park.Park
+import park.ParkPower
 import powercontrol.PowerController
 import units.*
 import util.PATH
 import util.fileNameDateFormater
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, private val config: ConfigDSL? = null) :
     Environment(randomSeed = randomSeed) {
 
-    lateinit var powerController: PowerController
+    private var powerController: PowerController
 
-    val inverterEventLog = mutableListOf<InverterEventDto>()
-    val engineEventLog = mutableListOf<EngineEventDto>()
-    val loadbankEventLog = mutableListOf<LoadbankEventDto>()
-    val batteryEventLog = mutableListOf<BatteryEventDto>()
-    val parkEventLog = mutableListOf<ParkEventDto>()
+    private val inverterEventLog = mutableListOf<InverterEventDto>()
+    private val engineEventLog = mutableListOf<EngineEventDto>()
+    private val loadbankEventLog = mutableListOf<LoadbankEventDto>()
+    private val batteryEventLog = mutableListOf<BatteryEventDto>()
+    private val parkEventLog = mutableListOf<ParkEventDto>()
 
     init {
+        powerController = setPowerController(simData)
         this.apply {
             if (inRealTime) ClockSync(tickDuration = 1.seconds)
             if (LogFlags.UNIT_READ_LOG) {
@@ -48,13 +51,12 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
                 addEventListener { it: BatteryReadEvent -> batteryEventLog.add(BatteryEventDto(it)) }
             }
             if (LogFlags.PARK_READ_LOG) addEventListener { it: ParkReadEvent -> parkEventLog.add(ParkEventDto(it)) }
-            powerController = setPowerController(simData)
         }
     }
 
     fun runWithSave(time: Int, unitLogFileName: String? = null, parkLogFileName: String? = null) {
         val startDate = DateTime()
-        run(time)
+        run(time.minutes)
         if (LogFlags.UNIT_READ_LOG) {
             val name = unitLogFileName ?: "unitLog${fileNameDateFormater.print(startDate)}"
 
@@ -74,8 +76,6 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
             if (batteryEventLog.size != 0)
                 batteryEventLog.toDataFrame()
                     .writeCSV("${PATH}\\$batteryName.csv")
-
-
         }
         if (LogFlags.PARK_READ_LOG) {
             val name = parkLogFileName ?: "parkLog${fileNameDateFormater.print(startDate)}"
@@ -83,6 +83,37 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
                 .writeCSV("${PATH}\\$name.csv")
         }
     }
+
+    /**
+     *  Gives back the produced power by parks at the time
+     */
+    suspend fun read(): List<ParkPower>{
+        return powerController.readParks()
+    }
+
+    /**
+     * Command all the park by the given target
+     * targetByPowerPlantId - target by power plants
+     */
+    suspend fun command(targetByPowerPlantId: Map<Int, Int>) {
+        return powerController.commandParks(targetByPowerPlantId)
+    }
+
+    /**
+     * Gives back the produced power by given parks
+     */
+    suspend fun readByIds(parkIds: List<Int>): List<ParkPower>?{
+        return powerController.readParksById(parkIds)
+    }
+
+    /**
+     * Gives back the max output by parkId
+     */
+    fun getMaxOutputByParkId(): Map<Int, Double>{
+        return powerController.getMaxOutputByParkId()
+    }
+
+
 
     private fun setPowerController(simData: SimulationData): PowerController {
         val parkList = mutableListOf<Park>()
@@ -262,7 +293,7 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
             POWER_CONTROL_REACTION_TIME = configConst?.POWER_CONTROL_REACTION_TIME
                 ?: constValues.POWER_CONTROL_REACTION_TIME,
             TIME_ACCURACY = configConst?.TIME_ACCURACY ?: constValues.TIME_ACCURACY,
-            PRODUCE_ACCURACY = configConst?.PRODUCE_ACCURACY ?: constValues.PRODUCE_ACCURACY
+            TARGET_ACCURACY = configConst?.TARGET_ACCURACY ?: constValues.TARGET_ACCURACY
         )
     }
 

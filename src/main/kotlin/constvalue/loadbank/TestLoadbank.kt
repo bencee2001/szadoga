@@ -8,5 +8,5 @@ object TestLoadbank: ConstValues {
     override val READ_FREQUENCY: Int = 0
     override val POWER_CONTROL_REACTION_TIME: Int = 0
     override val TIME_ACCURACY: Double = 0.0
-    override val PRODUCE_ACCURACY: Double = 0.0
+    override val TARGET_ACCURACY: Double = 0.0
 }

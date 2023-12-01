@@ -1,5 +1,7 @@
-package scheduler
+package scheduler.tasks
 
+import scheduler.Task
+import scheduler.TaskType
 import units.AbstractUnit
 
 class StartErrorTask(

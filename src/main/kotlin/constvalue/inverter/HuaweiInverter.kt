@@ -8,5 +8,5 @@ object HuaweiInverter: ConstValues {
     override val READ_FREQUENCY = 5  //sec
     override val POWER_CONTROL_REACTION_TIME = 5  //sec
     override val TIME_ACCURACY = 1.0
-    override val PRODUCE_ACCURACY = 0.0
+    override val TARGET_ACCURACY = 0.0
 }

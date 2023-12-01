@@ -1,16 +1,13 @@
 package units
 
-import LogFlags
 import constvalue.ConstValues
 import event.InverterReadEvent
-import event.ProducerReadEvent
 import org.apache.commons.math3.distribution.UniformRealDistribution
 import org.kalasim.*
-import scheduler.TargetSetTask
+import scheduler.tasks.TargetSetTask
 import scheduler.TaskScheduler
 import util.eventLogging
 import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.seconds
 
 class Inverter(
     inverterId: Int,
@@ -36,12 +33,11 @@ class Inverter(
     init {
         lastReadPower = produce
         val timeAccuracy = constants.TIME_ACCURACY + 0.1
-        val lowerBoundControl = constants.POWER_CONTROL_REACTION_TIME - timeAccuracy
         randomControlTime = uniform(
-            if(lowerBoundControl >= 0) lowerBoundControl else 0.0,
+            constants.POWER_CONTROL_REACTION_TIME,
             constants.POWER_CONTROL_REACTION_TIME + timeAccuracy
         )
-        produceAccuracy = ratedAcPower * constants.PRODUCE_ACCURACY + 0.1
+        produceAccuracy = ratedAcPower * constants.TARGET_ACCURACY + 0.1
     }
 
 
@@ -49,7 +45,7 @@ class Inverter(
         hold(1.minutes)
         taskScheduler.checkTasks()
         changeProduce()
-        println("Inverter $id: $produce, $targetOutput, $now")
+        println("Inverter $id: $produce, $targetOutput, $lastTargetCommand, $now")
     }
 
     override fun read(loggingEnabled: Boolean): UnitPower {

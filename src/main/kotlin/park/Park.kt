@@ -1,20 +1,14 @@
 package park
 
-import LogFlags
+import util.LogFlags
 import event.ParkReadEvent
 import kotlinx.coroutines.coroutineScope
 import org.kalasim.Component
 import units.AbstractUnit
-import units.Battery
 import units.UnitPowerMessage
 import units.UnitType
 import util.eventLogging
 
-// Lehet több fajta router egy parkban?(inverter,loadbank, engine)
-// Routerek között elosztódik a target power, hogyan??
-
-// Router szintű event logging (parkId, routerId, routerPower)/(parkId, sumRouterPower)
-// log amikor fgv van hívva
 class Park(
     val parkId: Int,
     val parkName: String,
@@ -37,7 +31,7 @@ class Park(
         }
     }
 
-    suspend fun getSumConsume(): ParkPower{
+    suspend fun getSumProsume(): ParkPower{
         val powers = unitList.map { coroutineScope { it.read(LogFlags.UNIT_READ_LOG) } }
         val time = powers.first().tickTime
         val parkPower = powers.sumOf { if (it.unitPowerMessage == UnitPowerMessage.PRODUCE)
@@ -56,19 +50,4 @@ class Park(
         return ParkPower(parkId, maximumOutput, parkPower, time)
     }
 
-    fun isParkHaveBattery(): Boolean{
-        return unitList.any { it.type == UnitType.BATTERY }
-    }
-
-    fun getNotFullBatteries(): List<Battery>{
-        val batteries = unitList.filter { it.type == UnitType.BATTERY }
-        val realBatteries = batteries.map { it as Battery }
-        return realBatteries.filter { !it.isEmpty() }
-    }
-
-    fun isBatteriesFull(): Boolean{
-        val batteries = unitList.filter { it.type == UnitType.BATTERY }
-        val realBatteries = batteries.map { it as Battery }
-        return realBatteries.all { it.isEmpty() }
-    }
 }

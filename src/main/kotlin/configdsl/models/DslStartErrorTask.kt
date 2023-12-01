@@ -1,6 +1,6 @@
 package configdsl.models
 
-import scheduler.StartErrorTask
+import scheduler.tasks.StartErrorTask
 import scheduler.Task
 import units.AbstractUnit
 

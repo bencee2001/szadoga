@@ -2,12 +2,11 @@ package units
 
 import constvalue.ConstValues
 import event.EngineReadEvent
-import event.ProducerReadEvent
 import org.apache.commons.math3.distribution.UniformRealDistribution
 import org.kalasim.invoke
 import org.kalasim.uniform
-import scheduler.EngineStartTask
-import scheduler.TargetSetTask
+import scheduler.tasks.EngineStartTask
+import scheduler.tasks.TargetSetTask
 import scheduler.TaskScheduler
 import scheduler.TaskType
 import util.eventLogging
@@ -35,13 +34,12 @@ class Engine(
 ) {
 
     private val randomControlTime: UniformRealDistribution
-    private val produceAccuracy: Double = ratedAcPower * constants.PRODUCE_ACCURACY
+    private val produceAccuracy: Double = ratedAcPower * constants.TARGET_ACCURACY
 
     init{
         val timeAccuracy = constants.TIME_ACCURACY + 0.1
-        val lowerBoundControl = constants.POWER_CONTROL_REACTION_TIME - timeAccuracy
         randomControlTime = uniform(
-            if(lowerBoundControl >= 0) lowerBoundControl else 0.0,
+            constants.POWER_CONTROL_REACTION_TIME,
             constants.POWER_CONTROL_REACTION_TIME + timeAccuracy
         )
     }
@@ -83,13 +81,12 @@ class Engine(
     }
 
 
-    override fun command(target: Double) { // not good if every 2 sec change
-        if(target == 0.0 || target < minimumRunningPower){
+    override fun command(target: Double) {
+        if(target == 0.0 || target < ratedAcPower.times(minimumRunningPower)){  // TODO test minimumRunningPower
             isStarted = false
             lastTargetCommand = 0.0
+            taskScheduler.emptyTaskList()
             taskScheduler.addTask(TargetSetTask(this, randomControlTime.invoke().toInt(), 0.0))
-            val engineStartTask = taskScheduler.getTaskByType(TaskType.ENGINE_START).firstOrNull()
-            engineStartTask?.let { taskScheduler.removeTask(it) }
         }else{
             if(!isStarted){
                 isStarted = true

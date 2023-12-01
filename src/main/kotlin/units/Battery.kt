@@ -3,7 +3,7 @@ package units
 import constvalue.ConstValues
 import event.BatteryReadEvent
 import org.kalasim.Component
-import scheduler.TargetSetTask
+import scheduler.tasks.TargetSetTask
 import scheduler.TaskScheduler
 import util.eventLogging
 import kotlin.time.Duration.Companion.minutes
@@ -98,10 +98,15 @@ class Battery (
     }
 
     fun isEmpty(): Boolean {
-        return charge < ratedAcPower * 0.1
+        return charge < ratedAcPower * EMPTY_PERCENTAGE
     }
 
     fun isFull(): Boolean {
-        return charge > ratedAcPower * 0.85
+        return charge > ratedAcPower * FULL_PERCENTAGE
+    }
+
+    companion object{
+        const val EMPTY_PERCENTAGE = 0.1
+        const val FULL_PERCENTAGE = 0.85
     }
 }

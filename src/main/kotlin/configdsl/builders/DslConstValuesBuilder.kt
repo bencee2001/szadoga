@@ -9,7 +9,7 @@ class DslConstValuesBuilder: NullConstValues {
     override var READ_FREQUENCY: Int? = null
     override var POWER_CONTROL_REACTION_TIME: Int? = null
     override var TIME_ACCURACY: Double? = null
-    override var PRODUCE_ACCURACY: Double? = null
+    override var TARGET_ACCURACY: Double? = null
 
     fun build(): DslConstValues {
         return DslConstValues(
@@ -18,7 +18,7 @@ class DslConstValuesBuilder: NullConstValues {
             READ_FREQUENCY,
             POWER_CONTROL_REACTION_TIME,
             TIME_ACCURACY,
-            PRODUCE_ACCURACY
+            TARGET_ACCURACY
         )
     }
 }

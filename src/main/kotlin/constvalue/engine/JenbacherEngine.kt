@@ -8,5 +8,5 @@ object JenbacherEngine: ConstValues {
     override val READ_FREQUENCY = 0
     override val POWER_CONTROL_REACTION_TIME = 0
     override val TIME_ACCURACY = 0.0
-    override val PRODUCE_ACCURACY = 0.01
+    override val TARGET_ACCURACY = 0.01
 }

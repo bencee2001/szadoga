@@ -15,5 +15,5 @@ abstract class Task(
         return holdInTick
     }
 
-    abstract fun process()
+    protected abstract fun process()
 }

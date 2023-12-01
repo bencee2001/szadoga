@@ -8,5 +8,5 @@ object FroniusInverter: ConstValues {
     override val READ_FREQUENCY = 14
     override val POWER_CONTROL_REACTION_TIME = 5
     override val TIME_ACCURACY = 2.0
-    override val PRODUCE_ACCURACY = 0.02  //example 4000 szab -> 5000 term
+    override val TARGET_ACCURACY = 0.02  //example 4000 szab -> 5000 term
 }

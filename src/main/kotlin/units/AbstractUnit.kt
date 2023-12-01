@@ -8,11 +8,6 @@ import org.kalasim.invoke
 import org.kalasim.uniform
 import scheduler.TaskScheduler
 
-/**
- * power producing or consuming unit
- * @property id
- * @property type
- */
 abstract class AbstractUnit(
     val id: Int,
     val type: UnitType,
@@ -51,8 +46,8 @@ abstract class AbstractUnit(
             UnitPower(id, 0.0, lastReadTime, UnitPowerMessage.ERROR)
     }
 
-    abstract fun readNewValue(): UnitPower
-    abstract fun readOldValue(): UnitPower
+    protected abstract fun readNewValue(): UnitPower
+    protected abstract fun readOldValue(): UnitPower
 
     abstract fun command(target: Double)
 

@@ -1,19 +1,3 @@
-
-import configdsl.config
-import configdsl.models.DslEndErrorTask
-import configdsl.models.DslStartErrorTask
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
-import kotlinx.datetime.Instant
-import model.*
-import model.types.*
-import org.koin.core.context.startKoin
-import scheduler.StartErrorTask
-import simulation.Simulation
-import simulation.SimulationData
-import units.UnitType
-import java.lang.Thread.sleep
-
 suspend fun main(args: Array<String>){
     /*coroutineScope {
 

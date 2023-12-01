@@ -1,6 +1,6 @@
 package units
 
-import LogFlags
+import util.LogFlags
 import constvalue.ConstValues
 import event.LoadbankReadEvent
 import org.kalasim.Component
@@ -43,7 +43,6 @@ class Loadbank(
 
     override fun read(loggingEnabled: Boolean): UnitPower {
         val power = super.read(loggingEnabled)
-        println("Fasz")
         eventLogging(LogFlags.UNIT_READ_LOG){
             log(
                 LoadbankReadEvent(
@@ -102,7 +101,7 @@ class Loadbank(
     }
 
     fun canNextStart(): Boolean{
-        return temp.div(maxTemp) > 0.75
+        return temp.div(maxTemp) > CAN_NEXT_START_PERCENTAGE
     }
 
     private fun changeTemperature() {
@@ -143,7 +142,11 @@ class Loadbank(
         return changeValue.times(temp).minus(changeValue.times(startTemp))
     }
 
-    fun calculateTempFromTarget(power: Double): Double{
+    private fun calculateTempFromTarget(power: Double): Double{
         return power.div(changeValue).plus(startTemp)
+    }
+
+    companion object{
+        const val CAN_NEXT_START_PERCENTAGE = 0.75
     }
 }

@@ -6,5 +6,5 @@ class CustomValues(
     override val READ_FREQUENCY: Int,
     override val POWER_CONTROL_REACTION_TIME: Int,
     override val TIME_ACCURACY: Double,
-    override val PRODUCE_ACCURACY: Double
+    override val TARGET_ACCURACY: Double
 ) : ConstValues

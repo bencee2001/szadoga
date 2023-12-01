@@ -8,5 +8,5 @@ object SMAManagerInverter: ConstValues {
     override val READ_FREQUENCY = 2
     override val POWER_CONTROL_REACTION_TIME = 2
     override val TIME_ACCURACY = 4.0
-    override val PRODUCE_ACCURACY = 0.0
+    override val TARGET_ACCURACY = 0.0
 }

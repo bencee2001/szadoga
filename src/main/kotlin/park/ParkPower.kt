@@ -1,7 +1,5 @@
 package park
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import org.kalasim.TickTime
 
 data class ParkPower(

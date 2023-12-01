@@ -8,5 +8,5 @@ object TestInverter: ConstValues {
     override val READ_FREQUENCY = 4
     override val POWER_CONTROL_REACTION_TIME = 5
     override val TIME_ACCURACY = 1.0
-    override val PRODUCE_ACCURACY = 0.012
+    override val TARGET_ACCURACY = 0.012
 }

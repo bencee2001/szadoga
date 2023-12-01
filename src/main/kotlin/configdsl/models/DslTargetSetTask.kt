@@ -1,6 +1,6 @@
 package configdsl.models
 
-import scheduler.TargetSetTask
+import scheduler.tasks.TargetSetTask
 import scheduler.Task
 import units.AbstractUnit
 
