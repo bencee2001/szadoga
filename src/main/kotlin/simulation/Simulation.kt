@@ -1,6 +1,5 @@
 package simulation
 
-import util.LogFlags
 import configdsl.ConfigDSL
 import configdsl.models.DslTask
 import configdsl.models.DslUnit
@@ -9,6 +8,7 @@ import constvalue.ConstValues
 import constvalue.CustomValues
 import event.*
 import event.eventDto.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 import model.BatteryData
 import model.EngineData
 import model.InverterData
@@ -19,13 +19,11 @@ import org.jetbrains.kotlinx.dataframe.io.writeCSV
 import org.joda.time.DateTime
 import org.kalasim.ClockSync
 import org.kalasim.Environment
-import org.kalasim.misc.AmbiguousDuration
 import park.Park
 import park.ParkPower
 import powercontrol.PowerController
 import units.*
-import util.PATH
-import util.fileNameDateFormater
+import util.*
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -39,6 +37,8 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
     private val loadbankEventLog = mutableListOf<LoadbankEventDto>()
     private val batteryEventLog = mutableListOf<BatteryEventDto>()
     private val parkEventLog = mutableListOf<ParkEventDto>()
+
+    private val logger = KotlinLogging.logger {  }
 
     init {
         powerController = setPowerController(simData)
@@ -56,9 +56,12 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
 
     fun runWithSave(time: Int, unitLogFileName: String? = null, parkLogFileName: String? = null) {
         val startDate = DateTime()
+        logger.info { "Simulation started ${prettyDateFormatter.print(startDate)}" }
         run(time.minutes)
+        logger.info { "Simulation ended" }
         if (LogFlags.UNIT_READ_LOG) {
-            val name = unitLogFileName ?: "unitLog${fileNameDateFormater.print(startDate)}"
+            logger.info { "Unit logging started" }
+            val name = unitLogFileName ?: "unitLog${fileNameDateFormatter.print(startDate)}"
 
             val inverterName = name + "INV"
             if (inverterEventLog.size != 0)
@@ -76,11 +79,14 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
             if (batteryEventLog.size != 0)
                 batteryEventLog.toDataFrame()
                     .writeCSV("${PATH}\\$batteryName.csv")
+            logger.info { "Unit logging ended" }
         }
         if (LogFlags.PARK_READ_LOG) {
-            val name = parkLogFileName ?: "parkLog${fileNameDateFormater.print(startDate)}"
+            logger.info { "Park logging started" }
+            val name = parkLogFileName ?: "parkLog${fileNameDateFormatter.print(startDate)}"
             parkEventLog.toDataFrame()
                 .writeCSV("${PATH}\\$name.csv")
+            logger.info { "Park logging ended" }
         }
     }
 
@@ -122,7 +128,6 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
         val loadbankIdsByPowerPlantId = getLoadbankIdsByPowerPlantId(simData)
         val engineIdsByPowerPlantId = getEngineIdsByPowerPlant(simData)
         val batteryIdsByPowerPlantId = getBatteryIdsByPowerPlant(simData)
-        println(batteryIdsByPowerPlantId.size)
 
         powerPlantIds.forEach { powerPlantId ->
             val inverters = simData.inverters.values.filter { inv ->
@@ -137,13 +142,10 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
             val batteries = simData.batteries.values.filter { bty ->
                 bty.batteryId in (batteryIdsByPowerPlantId[powerPlantId] ?: emptyList())
             }
-            println(simData.batteries)
-            println(batteryIdsByPowerPlantId)
             val inverterUnits = toInverterUnits(inverters)
             val loadbankUnits = toLoadbankUnits(loadbanks)
             val engineUnits = toEngineUnits(engines)
             val batteryUnits: List<Battery> = toBatteryUnits(batteries)
-            println(batteryUnits.size)
             val units = mutableListOf<AbstractUnit>()
             units.addAll(inverterUnits)
             units.addAll(loadbankUnits)

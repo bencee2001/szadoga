@@ -1,5 +1,22 @@
+import configdsl.config
+import configdsl.models.DslEndErrorTask
+import configdsl.models.DslStartErrorTask
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import model.EngineData
+import model.InverterData
+import model.PowerPlantData
+import model.types.EngineType
+import model.types.InverterType
+import org.koin.core.context.GlobalContext.startKoin
+import simulation.Simulation
+import simulation.SimulationData
+import units.UnitType
+import util.LogFlags
+import java.lang.Thread.sleep
+
 suspend fun main(args: Array<String>){
-    /*coroutineScope {
+    coroutineScope {
 
         val testConf = config {
             addDefaultProduceConfig(UnitType.INVERTER, 0.5)
@@ -47,13 +64,13 @@ suspend fun main(args: Array<String>){
 
         while(true){
             i += 2
-            println(test.powerController.readParks())
+            println(test.read())
             if(i < 30) {
-                test.powerController.commandParks(mapOf(4 to 22_000))
+                test.command(mapOf(4 to 22_000))
             }else{
-                test.powerController.commandParks(mapOf(4 to 10_000))
+                test.command(mapOf(4 to 10_000))
             }
             sleep(2_000)
         }
-    }*/
+    }
 }

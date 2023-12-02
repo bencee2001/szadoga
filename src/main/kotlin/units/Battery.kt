@@ -29,6 +29,7 @@ class Battery (
         hold(1.minutes)
         taskScheduler.checkTasks()
         changeProsume()
+        logger.debug { "Battery $id: $charge, $targetOutput, $now" }
         println("Battery $id: $charge, $targetOutput, $now")
     }
 

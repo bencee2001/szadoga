@@ -48,7 +48,7 @@ class Engine(
         hold(1.minutes)
         taskScheduler.checkTasks()
         changeProduce()
-        println("Engine $id: $produce, $lastTargetCommand, $now")
+        logger.debug { "Engine $id: $produce, $lastTargetCommand, $now" }
     }
 
     override fun read(loggingEnabled: Boolean): UnitPower{

@@ -7,6 +7,7 @@ import org.kalasim.*
 import scheduler.tasks.TargetSetTask
 import scheduler.TaskScheduler
 import util.eventLogging
+import util.getLogger
 import kotlin.time.Duration.Companion.minutes
 
 class Inverter(
@@ -30,6 +31,7 @@ class Inverter(
     private val randomControlTime: UniformRealDistribution
     private val produceAccuracy: Double
 
+
     init {
         lastReadPower = produce
         val timeAccuracy = constants.TIME_ACCURACY + 0.1
@@ -45,7 +47,7 @@ class Inverter(
         hold(1.minutes)
         taskScheduler.checkTasks()
         changeProduce()
-        println("Inverter $id: $produce, $targetOutput, $lastTargetCommand, $now")
+        logger.debug { "Inverter $id: $produce, $targetOutput, $lastTargetCommand, $now" }
     }
 
     override fun read(loggingEnabled: Boolean): UnitPower {

@@ -38,7 +38,7 @@ class Loadbank(
     override fun repeatedProcess() = sequence<Component> {
         hold(1.minutes)
         changeTemperature()
-        println("Loadbank $id: ${calculateConsumeFromTemp(temp)}, $temp, $tempTarget, $targetOutput, $now")
+        logger.debug { "Loadbank $id: ${calculateConsumeFromTemp(temp)}, $temp, $tempTarget, $targetOutput, $now" }
     }
 
     override fun read(loggingEnabled: Boolean): UnitPower {

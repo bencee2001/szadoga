@@ -19,8 +19,10 @@ dependencies {
     implementation(files("libs\\kalasim-0.11.5.jar"))
     // https://mvnrepository.com/artifact/com.thinkinglogic.builder/kotlin-builder-annotation
 
-    //implementation("ch.qos.logback:logback-classic:1.4.8")
-    //implementation("org.slf4j:slf4j-api:2.0.7")
+    implementation("ch.qos.logback:logback-classic:1.4.8")
+    implementation("org.slf4j:slf4j-api:2.0.7")
+
+    implementation("io.github.oshai:kotlin-logging-jvm:5.1.0")
 
     implementation("io.insert-koin:koin-core:3.3.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
