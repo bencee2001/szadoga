@@ -34,4 +34,8 @@ class PowerController(
     fun getMaxOutputByParkId(): Map<Int, Double>{
         return parkList.associate { it.parkId to it.maximumOutput }
     }
+
+    fun getParks(): List<Park>{
+        return parkList
+    }
 }

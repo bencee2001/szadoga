@@ -30,7 +30,6 @@ class Battery (
         taskScheduler.checkTasks()
         changeProsume()
         logger.debug { "Battery $id: $charge, $targetOutput, $now" }
-        println("Battery $id: $charge, $targetOutput, $now")
     }
 
     override fun read(loggingEnabled: Boolean): UnitPower {
@@ -56,8 +55,8 @@ class Battery (
 
     private fun getPowerForEvent(power: UnitPower): Int{
         return when (power.unitPowerMessage) {
-            UnitPowerMessage.PRODUCE -> power.power.toInt()
-            UnitPowerMessage.CONSUME -> -power.power.toInt()
+            UnitPowerMessage.PRODUCE -> -power.power.toInt()
+            UnitPowerMessage.CONSUME -> power.power.toInt()
             else -> 0
         }
     }
@@ -66,9 +65,9 @@ class Battery (
         val unitPower = if(targetOutput == 0.0)
             UnitPower(id, 0.0, now, UnitPowerMessage.PRODUCE)
         else if(targetOutput < 0)
-            UnitPower(id, constants.DOWN_POWER_CONTROL_PER_TICK, now, UnitPowerMessage.CONSUME)
+            UnitPower(id, constants.DOWN_POWER_CONTROL_PER_TICK, now, UnitPowerMessage.PRODUCE)
         else
-            UnitPower(id, constants.UP_POWER_CONTROL_PER_TICK, now, UnitPowerMessage.PRODUCE)
+            UnitPower(id, constants.UP_POWER_CONTROL_PER_TICK, now, UnitPowerMessage.CONSUME)
         lastReadTime = now
         lastReadPower = unitPower.power
         return unitPower
@@ -78,9 +77,9 @@ class Battery (
         return if(targetOutput == 0.0)
             UnitPower(id, 0.0, now, UnitPowerMessage.PRODUCE)
         else if(targetOutput < 0)
-            UnitPower(id, lastReadPower, now, UnitPowerMessage.CONSUME)
-        else
             UnitPower(id, lastReadPower, now, UnitPowerMessage.PRODUCE)
+        else
+            UnitPower(id, lastReadPower, now, UnitPowerMessage.CONSUME)
     }
 
     override fun command(target: Double) {

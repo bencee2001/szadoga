@@ -18,6 +18,7 @@ import org.jetbrains.kotlinx.dataframe.api.toDataFrame
 import org.jetbrains.kotlinx.dataframe.io.writeCSV
 import org.joda.time.DateTime
 import org.kalasim.ClockSync
+import org.kalasim.ComponentList
 import org.kalasim.Environment
 import park.Park
 import park.ParkPower
@@ -54,11 +55,12 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
         }
     }
 
-    fun runWithSave(time: Int, unitLogFileName: String? = null, parkLogFileName: String? = null) {
+    fun runWithSave(time: Int, unitLogFileName: String? = null, parkLogFileName: String? = null, savePath: String? = null) {
         val startDate = DateTime()
         logger.info { "Simulation started ${prettyDateFormatter.print(startDate)}" }
         run(time.minutes)
         logger.info { "Simulation ended" }
+        val path = savePath ?: PATH
         if (LogFlags.UNIT_READ_LOG) {
             logger.info { "Unit logging started" }
             val name = unitLogFileName ?: "unitLog${fileNameDateFormatter.print(startDate)}"
@@ -66,26 +68,26 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
             val inverterName = name + "INV"
             if (inverterEventLog.size != 0)
                 inverterEventLog.toDataFrame()
-                    .writeCSV("${PATH}\\$inverterName.csv")
+                    .writeCSV("$path\\$inverterName.csv")
             val engineName = name + "ENG"
             if (engineEventLog.size != 0)
                 engineEventLog.toDataFrame()
-                    .writeCSV("${PATH}\\$engineName.csv")
+                    .writeCSV("$path\\$engineName.csv")
             val loadbankName = name + "LD"
             if (loadbankEventLog.size != 0)
                 loadbankEventLog.toDataFrame()
-                    .writeCSV("${PATH}\\$loadbankName.csv")
+                    .writeCSV("$path\\$loadbankName.csv")
             val batteryName = name + "BT"
             if (batteryEventLog.size != 0)
                 batteryEventLog.toDataFrame()
-                    .writeCSV("${PATH}\\$batteryName.csv")
+                    .writeCSV("$path\\$batteryName.csv")
             logger.info { "Unit logging ended" }
         }
         if (LogFlags.PARK_READ_LOG) {
             logger.info { "Park logging started" }
             val name = parkLogFileName ?: "parkLog${fileNameDateFormatter.print(startDate)}"
             parkEventLog.toDataFrame()
-                .writeCSV("${PATH}\\$name.csv")
+                .writeCSV("$path\\$name.csv")
             logger.info { "Park logging ended" }
         }
     }
@@ -119,7 +121,9 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
         return powerController.getMaxOutputByParkId()
     }
 
-
+    fun getParks(): List<Park>{
+        return powerController.getParks()
+    }
 
     private fun setPowerController(simData: SimulationData): PowerController {
         val parkList = mutableListOf<Park>()
@@ -146,7 +150,7 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
             val loadbankUnits = toLoadbankUnits(loadbanks)
             val engineUnits = toEngineUnits(engines)
             val batteryUnits: List<Battery> = toBatteryUnits(batteries)
-            val units = mutableListOf<AbstractUnit>()
+            val units = ComponentList<AbstractUnit>()
             units.addAll(inverterUnits)
             units.addAll(loadbankUnits)
             units.addAll(engineUnits)

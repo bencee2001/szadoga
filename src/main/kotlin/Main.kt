@@ -8,12 +8,15 @@ import model.InverterData
 import model.PowerPlantData
 import model.types.EngineType
 import model.types.InverterType
+import org.kalasim.monitors.NumericStatisticMonitor
 import org.koin.core.context.GlobalContext.startKoin
 import simulation.Simulation
 import simulation.SimulationData
+import units.Inverter
 import units.UnitType
 import util.LogFlags
 import java.lang.Thread.sleep
+import javax.management.monitor.MonitorNotification
 
 suspend fun main(args: Array<String>){
     coroutineScope {
@@ -61,7 +64,7 @@ suspend fun main(args: Array<String>){
         launch {
             test.runWithSave(60)
         }
-
+        val mon = NumericStatisticMonitor()
         while(true){
             i += 2
             println(test.read())

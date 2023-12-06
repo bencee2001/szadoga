@@ -4,6 +4,7 @@ import util.LogFlags
 import event.ParkReadEvent
 import kotlinx.coroutines.coroutineScope
 import org.kalasim.Component
+import org.kalasim.ComponentList
 import units.AbstractUnit
 import units.UnitPowerMessage
 import units.UnitType
@@ -13,7 +14,7 @@ class Park(
     val parkId: Int,
     val parkName: String,
     val maximumOutput: Double,
-    val unitList: List<AbstractUnit>
+    val unitList: ComponentList<AbstractUnit>
 ): Component(){
 
     private var targetPower: Int = 0

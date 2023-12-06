@@ -7,7 +7,6 @@ import org.kalasim.*
 import scheduler.tasks.TargetSetTask
 import scheduler.TaskScheduler
 import util.eventLogging
-import util.getLogger
 import kotlin.time.Duration.Companion.minutes
 
 class Inverter(

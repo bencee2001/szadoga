@@ -9,6 +9,7 @@ import scheduler.tasks.EngineStartTask
 import scheduler.tasks.TargetSetTask
 import scheduler.TaskScheduler
 import scheduler.TaskType
+import scheduler.tasks.EngineStopTask
 import util.eventLogging
 import kotlin.time.Duration.Companion.minutes
 
@@ -48,7 +49,7 @@ class Engine(
         hold(1.minutes)
         taskScheduler.checkTasks()
         changeProduce()
-        logger.debug { "Engine $id: $produce, $lastTargetCommand, $now" }
+        logger.debug { "Engine $id: $produce, $targetOutput,$lastTargetCommand, $now" }
     }
 
     override fun read(loggingEnabled: Boolean): UnitPower{
@@ -82,13 +83,20 @@ class Engine(
 
 
     override fun command(target: Double) {
-        if(target == 0.0 || target < ratedAcPower.times(minimumRunningPower)){  // TODO test minimumRunningPower
+        val engineStartTime = getEngineStartTime()
+        if((target == 0.0 && lastTargetCommand != 0.0) || target < ratedAcPower.times(minimumRunningPower)){  // TODO test minimumRunningPower
             isStarted = false
             lastTargetCommand = 0.0
             taskScheduler.emptyTaskList()
-            taskScheduler.addTask(TargetSetTask(this, randomControlTime.invoke().toInt(), 0.0))
+            val time = if(engineStartTime == 0){
+                constants.POWER_CONTROL_REACTION_TIME
+            }else{
+                engineStartTime - 1
+            }
+            taskScheduler.addTask(EngineStopTask(this, time))
         }else{
             if(!isStarted){
+                taskScheduler.emptyTaskList()
                 isStarted = true
                 val newTarget = getRandomizeTarget(target)
                 lastTargetCommand = newTarget
@@ -97,7 +105,6 @@ class Engine(
                 if (target !in targetOutput - produceAccuracy..targetOutput + produceAccuracy) {
                     val newTarget = getRandomizeTarget(target)
                     lastTargetCommand = newTarget
-                    val engineStartTime = getEngineStartTime()
                     taskScheduler.addTask(TargetSetTask(this, engineStartTime + randomControlTime.invoke().toInt(), newTarget))
                 }
             }
@@ -106,12 +113,8 @@ class Engine(
 
     private fun getEngineStartTime(): Int {
         val engineStartTasks = taskScheduler.getTaskByType(TaskType.ENGINE_START)
-        if(engineStartTasks.size > 1){
-            error("More then 1 EngineStartTasks")
-        } else {
-            val engineStartTask = engineStartTasks.firstOrNull()
-            return engineStartTask?.holdInTick ?: 0
-        }
+        val latestEngineStartTask = engineStartTasks.maxByOrNull { it.holdInTick }
+        return latestEngineStartTask?.holdInTick ?: 0
     }
 
     fun getStartPower(): Double {

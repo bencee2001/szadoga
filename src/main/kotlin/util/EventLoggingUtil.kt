@@ -2,10 +2,9 @@ package util
 
 const val PATH = "src\\main\\LogResults"
 
-fun eventLogging(isLogging: Boolean ,block: () -> Unit){
-    if(isLogging){
+fun eventLogging(isLoggingEnabled: Boolean, block: () -> Unit){
+    if(isLoggingEnabled)
         block()
-    }
 }
 
 object LogFlags {
