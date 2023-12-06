@@ -5,10 +5,9 @@ import configdsl.models.DslTask
 import configdsl.models.DslUnit
 import constvalue.NullConstValues
 import model.types.UnitSubType
-import units.AbstractUnit
 import units.UnitType
 
-typealias DefaultProduceConfig = MutableMap<UnitType, Double> //%
+typealias DefaultProduceConfig = MutableMap<UnitType, Double>
 typealias TypeConfig = MutableMap<Pair<UnitType, UnitSubType>, NullConstValues>
 typealias UnitConfig = MutableMap<Pair<UnitType, Int>, DslUnit>
 typealias UnitTasksConfig = MutableMap<Pair<UnitType, Int>, MutableList<DslTask>>

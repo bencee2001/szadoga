@@ -3,19 +3,13 @@ plugins {
     application
 }
 
-group = "hu.ewiser"
-version = "0.0.1"
-
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    //implementation("com.github.holgerbrandl:kalasim:0.11.6")
     implementation("org.jetbrains.kotlinx:dataframe:0.12.0")
-    //implementation("io.insert-koin:koin-logger-slf4j:3.3.1")
     implementation(files("libs\\kalasim-0.11.5.jar"))
-    // https://mvnrepository.com/artifact/com.thinkinglogic.builder/kotlin-builder-annotation
 
     implementation("ch.qos.logback:logback-classic:1.4.8")
     implementation("org.slf4j:slf4j-api:2.0.7")

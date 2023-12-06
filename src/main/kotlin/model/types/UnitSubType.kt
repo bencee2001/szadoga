@@ -1,4 +1,3 @@
 package model.types
 
-interface UnitSubType {
-}
+interface UnitSubType
