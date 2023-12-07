@@ -84,7 +84,7 @@ class Engine(
 
     override fun command(target: Double) {
         val engineStartTime = getEngineStartTime()
-        if((target == 0.0 && lastTargetCommand != 0.0) || target < ratedAcPower.times(minimumRunningPower)){  // TODO test minimumRunningPower
+        if((target == 0.0 && lastTargetCommand != 0.0) || (target < ratedAcPower.times(minimumRunningPower) && isStarted)){
             isStarted = false
             lastTargetCommand = 0.0
             taskScheduler.emptyTaskList()
@@ -94,7 +94,7 @@ class Engine(
                 engineStartTime - 1
             }
             taskScheduler.addTask(EngineStopTask(this, time))
-        }else{
+        }else if (target != 0.0){
             if(!isStarted){
                 taskScheduler.emptyTaskList()
                 isStarted = true
@@ -102,11 +102,17 @@ class Engine(
                 lastTargetCommand = newTarget
                 taskScheduler.addTask(EngineStartTask(this, heatUpTimeInTick, newTarget))
             } else {
-                if (target !in targetOutput - produceAccuracy..targetOutput + produceAccuracy) {
-                    val newTarget = getRandomizeTarget(target)
-                    lastTargetCommand = newTarget
-                    taskScheduler.addTask(TargetSetTask(this, engineStartTime + randomControlTime.invoke().toInt(), newTarget))
-                }
+                    if (target !in targetOutput - produceAccuracy..targetOutput + produceAccuracy) {
+                        val newTarget = getRandomizeTarget(target)
+                        lastTargetCommand = newTarget
+                        taskScheduler.addTask(
+                            TargetSetTask(
+                                this,
+                                engineStartTime + randomControlTime.invoke().toInt(),
+                                newTarget
+                            )
+                        )
+                    }
             }
         }
     }

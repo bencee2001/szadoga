@@ -35,7 +35,7 @@ class TaskScheduler{
     }
 
     companion object{
-        val configTasks = listOf(
+        private val configTasks = listOf(
             TaskType.START_ERROR,
             TaskType.END_ERROR,
         )
