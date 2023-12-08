@@ -287,7 +287,7 @@ class Simulation(simData: SimulationData, randomSeed: Int, inRealTime: Boolean, 
         unitType: UnitType,
         unitSubType: UnitSubType,
         ratedAcPower: Double? = null
-    ): ConstValues { // TODO kivenni acPower-t
+    ): ConstValues {
         val configConst = config?.typeConfig?.get(Pair(unitType, unitSubType))
         val constValues = ConstByType.get(Pair(unitType, unitSubType))
         return CustomValues(
